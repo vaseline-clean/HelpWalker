@@ -16,3 +16,4 @@ export default function App() {
     </NavigationContainer>
   );
 }
+//ควยพ่อมึงตาย
