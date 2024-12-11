@@ -1,29 +1,62 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 
 export default function ChatScreen({ navigation }) {
+  const [chats, setChats] = useState([
+    { id: '1', name: 'Keerati', lastMessage: 'สวัสดี! มีอะไรให้ช่วยไหม?', time: '8:36 am', avatar: 'https://example.com/avatar1.png' },
+    { id: '2', name: 'Arun', lastMessage: 'ขอข้อมูลเพิ่มเติมเกี่ยวกับงานหน่อยครับ', time: '8:37 am', avatar: 'https://example.com/avatar2.png' },
+  ]);
+
+  const [selectedChat, setSelectedChat] = useState(null);
   const [messages, setMessages] = useState([
     { id: '1', text: 'สวัสดี! มีอะไรให้ช่วยไหม?', sender: 'other' },
     { id: '2', text: 'สวัสดีครับ ขอข้อมูลเพิ่มเติมเกี่ยวกับงานหน่อยครับ', sender: 'me' },
   ]);
   const [inputText, setInputText] = useState('');
 
-  // ฟังก์ชันสำหรับส่งข้อความ
   const sendMessage = () => {
-    if (inputText.trim() === '') return; // ไม่ส่งข้อความว่างเปล่า
+    if (inputText.trim() === '') return;
     setMessages([
       ...messages,
       { id: Date.now().toString(), text: inputText, sender: 'me' },
     ]);
-    setInputText(''); // เคลียร์ข้อความในช่องป้อนข้อความ
+    setInputText('');
   };
+
+  if (!selectedChat) {
+    return (
+      <View style={styles.container}>
+        <CustomHeader navigation={navigation} title="Chats" />
+
+        <FlatList
+          data={chats}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.chatItemContainer}
+              onPress={() => setSelectedChat(item)}
+            >
+              <Image source={{ uri: item.avatar }} style={styles.avatar} />
+              <View style={styles.chatContentContainer}>
+                <View style={styles.chatHeader}>
+                  <Text style={styles.nameText}>{item.name}</Text>
+                  <Text style={styles.timeText}>{item.time}</Text>
+                </View>
+                <Text style={styles.lastMessageText}>{item.lastMessage}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          contentContainerStyle={styles.chatListContainer}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <CustomHeader navigation={navigation} title="แชท" />
+      <CustomHeader navigation={navigation} title={selectedChat.name} onBack={() => setSelectedChat(null)} />
 
-      {/* รายการข้อความ */}
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
@@ -40,7 +73,6 @@ export default function ChatScreen({ navigation }) {
         contentContainerStyle={styles.messagesContainer}
       />
 
-      {/* ช่องป้อนข้อความ */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.textInput}
@@ -60,6 +92,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  chatListContainer: {
+    padding: 10,
+  },
+  chatItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e5e5',
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  chatContentContainer: {
+    flex: 1,
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  nameText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  timeText: {
+    fontSize: 12,
+    color: '#888',
+  },
+  lastMessageText: {
+    color: '#555',
+    marginTop: 2,
   },
   messagesContainer: {
     flexGrow: 1,
