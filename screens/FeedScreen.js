@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 
 export default function FeedScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // ฟังก์ชันสำหรับการแสดงรายละเอียดภารกิจ
+  // ฟังก์ชันสำหรับการนำทางไปยังหน้ารายละเอียดภารกิจ
   const handleAcceptMission = () => {
-    Alert.alert(
-      'รายละเอียดภารกิจ',
-      'นี่คือภารกิจที่คุณต้องทำ: \n- เป้าหมาย: เก็บขยะในพื้นที่สาธารณะ\n- เวลาสิ้นสุด: 12 ธันวาคม 2024',
-      [{ text: 'ตกลง', onPress: () => console.log('Mission Accepted') }]
-    );
+    navigation.navigate('MissionDetails', {
+      missionTitle: 'ต้องการคนช่วยลดน้ำต้นไม้ที่บ้าน',
+      missionDetails:
+        'ลดต้นไม้หน้าบ้านทั้งหมด และหลังบ้าน ใช้ที่รดน้ำต้นไม้... ' +
+        'ควรใช้น้ำแรงพอประมาณเพื่อไม่ให้ดินกระเด็นไปทั่ว',
+      creatorName: 'Munin Phoolphon',
+      creatorPhone: '080-xxx-xxxx',
+      address: '99 หมู่ 9 ตำบล ห้วยแถ่ อำเภอ ชนบท จังหวัด ขอนแก่น 41350',
+    });
   };
 
   return (
@@ -25,31 +29,22 @@ export default function FeedScreen({ navigation }) {
 
       {/* User Info Box */}
       <View style={styles.userInfoBox}>
-        <Image 
-          source={require('./assets/user_icon.png')} 
-          style={styles.userIcon} 
-        />
+        <Image source={require('./assets/user_icon.png')} style={styles.userIcon} />
         <View style={styles.userDetails}>
-          <Text style={styles.userName}>John Doe</Text>
-          <Text style={styles.userPhone}>+66 64 103 4071</Text>
+          <Text style={styles.userName}>Munin Phoolphon</Text>
+          <Text style={styles.userPhone}>080-xxx-xxxx</Text>
         </View>
       </View>
 
       {/* Mission Box */}
       <View style={styles.missionBox}>
         {/* ชื่อผู้สร้าง */}
-        <Text style={styles.creatorName}>ผู้สร้าง: Alice</Text>
+        <Text style={styles.creatorName}>ภารกิจโดย: Munin Phoolphon</Text>
 
         {/* ข้อมูลภารกิจ */}
         <Text style={styles.missionInfo}>
-          ภารกิจ: เก็บขยะในพื้นที่สาธารณะ{'\n'}เวลาสิ้นสุด: 12 ธันวาคม 2024
+          ภารกิจ: ลดน้ำต้นไม้ที่บ้าน {'\n'}เวลาสิ้นสุด: 12 ธันวาคม 2024
         </Text>
-
-        {/* Creator Icon */}
-        <Image 
-          source={require('./assets/creator_icon.png')} 
-          style={styles.creatorIcon} 
-        />
 
         {/* ปุ่มรับภารกิจ */}
         <TouchableOpacity style={styles.acceptButton} onPress={handleAcceptMission}>
@@ -98,7 +93,7 @@ const styles = StyleSheet.create({
   },
   missionBox: {
     margin: 10,
-    padding: 30,
+    padding: 20,
     backgroundColor: '#e0f7fa',
     borderRadius: 10,
     shadowColor: '#000',
@@ -106,7 +101,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    position: 'relative',
   },
   creatorName: {
     fontSize: 16,
@@ -119,22 +113,12 @@ const styles = StyleSheet.create({
     color: '#004d40',
     marginBottom: 10,
   },
-  creatorIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 60,
-    height: 60,
-    borderRadius: 20,
-  },
   acceptButton: {
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
     backgroundColor: '#00796b',
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
+    alignSelf: 'flex-end',
   },
   acceptButtonText: {
     color: '#fff',
