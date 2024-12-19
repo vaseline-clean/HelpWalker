@@ -19,6 +19,10 @@ export default function App() {
           component={LoginScreen} 
           options={{ headerShown: false }} 
         />
+        <Stack.Screen 
+        name="AnotherLoginScreen" 
+        component={AnotherLoginScreen} 
+        options={{ headerShown: false }} />
         
         {/* หน้าหลัก MainTabs */}
         <Stack.Screen 
@@ -44,4 +48,3 @@ export default function App() {
     </NavigationContainer>
   );
 }
-//....
