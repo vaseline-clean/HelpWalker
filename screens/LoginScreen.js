@@ -38,6 +38,14 @@ export default function LoginScreen({ navigation }) {
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>ล็อกอิน</Text>
       </TouchableOpacity>
+
+      {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
+      <TouchableOpacity
+        style={styles.linkButton}
+        onPress={() => navigation.navigate('AnotherLoginScreen')}
+      >
+        <Text style={styles.linkText}>เลือกวิธีการเข้าสู่ระบบอื่น</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -47,6 +55,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
     width: 150,
@@ -74,10 +83,19 @@ const styles = StyleSheet.create({
     width: '80%',
     borderRadius: 10,
     alignItems: 'center',
+    marginTop: 20,
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  linkButton: {
+    marginTop: 20,
+  },
+  linkText: {
+    color: '#007bff',
+    fontSize: 16,
+    textDecorationLine: 'underline',
   },
 });
