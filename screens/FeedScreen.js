@@ -14,6 +14,7 @@ export default function FeedScreen({ navigation }) {
         'ควรใช้น้ำแรงพอประมาณเพื่อไม่ให้ดินกระเด็นไปทั่ว',
       creatorName: 'Munin Phoolphon',
       creatorPhone: '080-xxx-xxxx',
+      creatorIcon: require('./assets/creator_icon.png'), // เพิ่ม icon ของ creator
       address: '99 หมู่ 9 ตำบล ห้วยแถ่ อำเภอ ชนบท จังหวัด ขอนแก่น 41350',
     });
   };
@@ -38,8 +39,11 @@ export default function FeedScreen({ navigation }) {
 
       {/* Mission Box */}
       <View style={styles.missionBox}>
-        {/* ชื่อผู้สร้าง */}
-        <Text style={styles.creatorName}>ภารกิจโดย: Munin Phoolphon</Text>
+        {/* Creator Icon */}
+        <View style={styles.creatorInfo}>
+          <Image source={require('./assets/creator_icon.png')} style={styles.creatorIcon} />
+          <Text style={styles.creatorName}>ภารกิจโดย: Munin Phoolphon</Text>
+        </View>
 
         {/* ข้อมูลภารกิจ */}
         <Text style={styles.missionInfo}>
@@ -102,11 +106,21 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  creatorInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  creatorIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
   creatorName: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#00796b',
-    marginBottom: 5,
   },
   missionInfo: {
     fontSize: 14,
