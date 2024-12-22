@@ -23,7 +23,7 @@ export default function AnotherLoginScreen({ navigation }) {
 
       {/* ปุ่มล็อกอินด้วย Facebook */}
       <TouchableOpacity style={[styles.button, styles.facebookButton]} onPress={handleFacebookLogin}>
-      <Image source={require('../screens/assets/facebook.png')} style={styles.icon} />
+        <Image source={require('../screens/assets/facebook.png')} style={styles.icon} />
         <Text style={styles.buttonText}>ล็อกอินด้วย Facebook</Text>
       </TouchableOpacity>
 
@@ -34,10 +34,18 @@ export default function AnotherLoginScreen({ navigation }) {
       </TouchableOpacity>
 
       {/* ปุ่มล็อกอินด้วยเบอร์โทรศัพท์ */}
-      <TouchableOpacity style={[styles.button, styles.phoneButton]} onPress={handlePhoneLogin}>
-      <Image source={require('../screens/assets/Phone.png')} style={styles.icon} />
+      {/* <TouchableOpacity style={[styles.button, styles.phoneButton]} onPress={handlePhoneLogin}>
+        <Image source={require('../screens/assets/Phone.png')} style={styles.icon} />
         <Text style={styles.buttonText}>ล็อกอินด้วยเบอร์โทรศัพท์</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+
+      {/* ปุ่มกลับไปหน้า LoginScreen */}
+      <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => navigation.navigate('Login')}
+            >
+              <Text style={styles.linkText}>กลับไปหน้าล็อคอิน</Text>
+            </TouchableOpacity>
     </View>
   );
 }
@@ -45,7 +53,7 @@ export default function AnotherLoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f5ff',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -65,13 +73,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   facebookButton: {
-    backgroundColor: '#4267B2',
+    backgroundColor: '#6666ff',
   },
   googleButton: {
-    backgroundColor: '#DB4437',
+    backgroundColor: '#FF6666',
   },
   phoneButton: {
     backgroundColor: '#34A853',
+  },
+  backButton: {
+    backgroundColor: '#888',
   },
   buttonText: {
     color: '#fff',
@@ -82,5 +93,10 @@ const styles = StyleSheet.create({
   icon: {
     width: 24,
     height: 24,
+  },
+  linkText: {
+    color: '#FF0033',
+    fontSize: 16,
+    textDecorationLine: 'underline',
   },
 });
