@@ -39,13 +39,23 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.buttonText}>ล็อกอิน</Text>
       </TouchableOpacity>
 
-      {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
+   {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('AnotherLoginScreen')}
       >
         <Text style={styles.linkText}>เลือกวิธีการเข้าสู่ระบบอื่น</Text>
       </TouchableOpacity>
+      
+      {/*ปุ่มสำหรัยไปยังหน้าสมัคร*/}
+      <TouchableOpacity
+        style={styles.linkButton}
+        onPress={() => navigation.navigate('SindupScreen')}
+      >
+        <Text style={styles.linkText1}>ยังไม่มีบัญชี?</Text>
+      </TouchableOpacity>
+
+   
     </View>
   );
 }
@@ -53,7 +63,7 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f5ff',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -95,6 +105,11 @@ const styles = StyleSheet.create({
   },
   linkText: {
     color: '#007bff',
+    fontSize: 16,
+    textDecorationLine: 'underline',
+  },
+  linkText1: {
+    color: '#FF0033',
     fontSize: 16,
     textDecorationLine: 'underline',
   },
