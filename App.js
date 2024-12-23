@@ -23,13 +23,13 @@ export default function App() {
         <Stack.Screen 
         name="AnotherLoginScreen" 
         component={AnotherLoginScreen} 
-        options={{ headerShown: false }} />
-        
+        options={{ headerShown: false }} 
+        />
         <Stack.Screen 
         name="SindupScreen" 
         component={SindupScreen} 
-        options={{ headerShown: false }} />
-
+        options={{ headerShown: false }} 
+        />
         {/* หน้าหลัก MainTabs */}
         <Stack.Screen 
           name="MainTabs" 
