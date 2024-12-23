@@ -6,6 +6,7 @@ import AnotherLoginScreen from './screens/AnotherLoginScreen';
 import MainTabs from './navigations/MainTabs'; 
 import MissionDetailsScreen from './screens/MissionDetailsScreen'; // Import หน้ารายละเอียดภารกิจ
 import FeedScreen from './screens/FeedScreen'; // Import FeedScreen
+import SindupScreen from './screens/SindupScreen';
 
 const Stack = createStackNavigator();
 
@@ -16,6 +17,7 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="AnotherLoginScreen" component={AnotherLoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="SindupScreen" component={SindupScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

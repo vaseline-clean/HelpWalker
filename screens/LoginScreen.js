@@ -39,6 +39,14 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.buttonText}>ล็อกอิน</Text>
       </TouchableOpacity>
 
+   {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
+      <TouchableOpacity
+        style={styles.linkButton}
+        onPress={() => navigation.navigate('AnotherLoginScreen')}
+      >
+        <Text style={styles.linkText}>เลือกวิธีการเข้าสู่ระบบอื่น</Text>
+      </TouchableOpacity>
+      
       {/*ปุ่มสำหรัยไปยังหน้าสมัคร*/}
       <TouchableOpacity
         style={styles.linkButton}
@@ -47,13 +55,7 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.linkText1}>ยังไม่มีบัญชี?</Text>
       </TouchableOpacity>
 
-      {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
-      <TouchableOpacity
-        style={styles.linkButton}
-        onPress={() => navigation.navigate('AnotherLoginScreen')}
-      >
-        <Text style={styles.linkText}>เลือกวิธีการเข้าสู่ระบบอื่น</Text>
-      </TouchableOpacity>
+   
     </View>
   );
 }
