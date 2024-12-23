@@ -50,7 +50,7 @@ export default function LoginScreen({ navigation }) {
       {/*ปุ่มสำหรัยไปยังหน้าสมัคร*/}
       <TouchableOpacity
         style={styles.linkButton}
-        onPress={() => navigation.navigate('AnotherLoginScreen')}
+        onPress={() => navigation.navigate('SindupScreen')}
       >
         <Text style={styles.linkText1}>ยังไม่มีบัญชี?</Text>
       </TouchableOpacity>
