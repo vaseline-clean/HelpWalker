@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import CustomHeader from '../components/CustomHeader';
+import MissionDetailsScreen from './MissionDetailsScreen';
 
 export default function ChatScreen({ navigation }) {
   const [chats, setChats] = useState([
@@ -176,3 +179,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

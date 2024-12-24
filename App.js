@@ -7,6 +7,7 @@ import MainTabs from './navigations/MainTabs';
 import SindupScreen from './screens/SindupScreen';
 import MissionDetailsScreen from './screens/MissionDetailsScreen'; // Import หน้ารายละเอียดภารกิจ
 import FeedScreen from './screens/FeedScreen'; // Import FeedScreen
+import ChatScreen from './screens/ChatScreen';
 
 const Stack = createStackNavigator();
 
@@ -30,14 +31,11 @@ export default function App() {
         component={SindupScreen} 
         options={{ headerShown: false }}/>
 
-
-
         {/* หน้าหลัก MainTabs */}
         <Stack.Screen 
           name="MainTabs" 
           component={MainTabs} 
           options={{ headerShown: false }}/>
-
 
         {/* หน้าฟีด (FeedScreen) */}
         <Stack.Screen 
@@ -45,12 +43,16 @@ export default function App() {
           component={FeedScreen} 
           options={{ title: 'ฟีดภารกิจ', headerShown: true }}/>
 
-
         {/* หน้ารายละเอียดภารกิจ (MissionDetailsScreen) */}
         <Stack.Screen 
           name="MissionDetails" 
           component={MissionDetailsScreen} 
           options={{ title: 'รายละเอียดภารกิจ', headerShown: true }}/>
+
+        <Stack.Screen 
+          name="ChatScreen" 
+          component={ChatScreen} 
+          options={{ title: 'แชท', headerShown: true }}/>
 
       </Stack.Navigator>
     </NavigationContainer>
