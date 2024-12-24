@@ -23,7 +23,6 @@ export default function CustomHeader({
       'คุณต้องการล็อกเอาท์หรือไม่?',
       [
         {
-          text: 'ยกเลิก',
           style: 'cancel',
         },
         {
