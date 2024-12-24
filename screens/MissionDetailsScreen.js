@@ -1,32 +1,39 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export default function MissionDetailsScreen({ route }) {
+export default function MissionDetailsScreen({ route, navigation }) {
   const { missionTitle, missionDetails, creatorName, creatorPhone, address } = route.params;
 
   return (
     <View style={styles.container}>
-      {/* User Info */}
+      {/* ข้อมูลผู้สร้างภารกิจ */}
       <View style={styles.card}>
         <Text style={styles.userName}>{creatorName}</Text>
         <Text style={styles.userPhone}>{creatorPhone}</Text>
       </View>
 
-      {/* Mission Details */}
+      {/* รายละเอียดภารกิจ */}
       <View style={styles.card}>
         <Text style={styles.missionTitle}>{missionTitle}</Text>
         <Text style={styles.missionDetailsTitle}>รายละเอียดภารกิจ</Text>
         <Text style={styles.missionDetails}>{missionDetails}</Text>
       </View>
 
-      {/* Address */}
+      {/* ที่อยู่ */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>ที่อยู่ของผู้สร้างภารกิจ</Text>
         <Text style={styles.address}>{address}</Text>
       </View>
 
-      {/* Accept Button */}
-      <TouchableOpacity style={styles.acceptButton}>
+      {/* ปุ่มรับภารกิจ */}
+      <TouchableOpacity
+        style={styles.acceptButton}
+        onPress={() => navigation.navigate('ChatScreen', { 
+          creatorName, 
+          creatorPhone, 
+          missionTitle 
+        })}
+      >
         <Text style={styles.acceptButtonText}>รับภารกิจ</Text>
       </TouchableOpacity>
     </View>
