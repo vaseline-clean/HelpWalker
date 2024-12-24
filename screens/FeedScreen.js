@@ -112,10 +112,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   creatorIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+    width: 70,
+    height: 70,
+    borderRadius: 25,
+    position: 'absolute', // วางตำแหน่งให้เป็นมุมขวาบน
+    top: -15, // เลื่อนขึ้นไปด้านบนเล็กน้อย
+    right: -5, // ชิดมุมขวาของกล่อง
   },
   creatorName: {
     fontSize: 16,

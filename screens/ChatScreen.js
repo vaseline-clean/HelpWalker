@@ -7,7 +7,7 @@ import MissionDetailsScreen from './MissionDetailsScreen';
 
 export default function ChatScreen({ navigation }) {
   const [chats, setChats] = useState([
-    { id: '1', name: 'Keerati', lastMessage: 'สวัสดี! มีอะไรให้ช่วยไหม?', time: '8:36 am', avatar: 'https://example.com/avatar1.png' },
+    { id: '1', name: 'Munin', lastMessage: 'สวัสดี! มีอะไรให้ช่วยไหม?', time: '8:36 am', avatar: 'https://example.com/avatar1.png' },
     { id: '2', name: 'Arun', lastMessage: 'ขอข้อมูลเพิ่มเติมเกี่ยวกับงานหน่อยครับ', time: '8:37 am', avatar: 'https://example.com/avatar2.png' },
   ]);
 
