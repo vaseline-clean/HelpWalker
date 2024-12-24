@@ -20,22 +20,31 @@ export default function CustomHeader({
   const handleUserIconPress = () => {
     Alert.alert(
       'โปรไฟล์',
-      'คุณต้องการล็อกเอาท์หรือไม่?',
+      'คุณต้องการทำอะไร?',
       [
         {
-          style: 'cancel',
+          text: 'แก้ไขโปรไฟล์',
+          onPress: () => {
+            // ไปยังหน้าตกแต่งโปรไฟล์
+            navigation.navigate('ProfindScreen');
+          },
         },
         {
           text: 'ล็อกเอาท์',
           onPress: () => {
             // ทำการล็อกเอาท์และกลับไปที่หน้า LoginScreen
-            navigation.replace('Login'); // เปลี่ยนหน้าไปยัง LoginScreen
+            navigation.replace('Login');
           },
         },
+        {
+          text: 'ยกเลิก',
+          style: 'cancel',
+        },
       ],
-      { cancelable: false }
+      { cancelable: true }
     );
   };
+  
 
   return (
     <View style={styles.header}>

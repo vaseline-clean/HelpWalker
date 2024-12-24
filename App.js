@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';  
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './screens/LoginScreen';
 import AnotherLoginScreen from './screens/AnotherLoginScreen';
@@ -9,6 +9,7 @@ import MissionDetailsScreen from './screens/MissionDetailsScreen'; // Import ห
 import FeedScreen from './screens/FeedScreen'; // Import FeedScreen
 import ChatScreen from './screens/ChatScreen';
 import ListScreen from './screens/ListScreen';
+import ProfindScreen from './screens/ProfindScreen';
 
 const Stack = createStackNavigator();
 
@@ -38,6 +39,11 @@ export default function App() {
           component={MainTabs} 
           options={{ headerShown: false }}/>
 
+        <Stack.Screen 
+          name="ProfindScreen" 
+          component={ProfindScreen} 
+          options={{ headerShown: false }}/>
+
         {/* หน้าฟีด (FeedScreen) */}
         <Stack.Screen 
           name="FeedScreen" 
@@ -59,6 +65,8 @@ export default function App() {
           name="ListScreen" 
           component={ListScreen} 
           options={{ title: 'รายการ', headerShown: true }}/>
+
+
 
       </Stack.Navigator>
     </NavigationContainer>
