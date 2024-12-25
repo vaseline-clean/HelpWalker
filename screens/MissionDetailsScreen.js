@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   acceptButton: {
-    backgroundColor: '#FF7D54',
+    backgroundColor: '#4CAF50',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
