@@ -25,8 +25,8 @@ export default function ListScreen({ navigation }) {
   const tasks = [
     {
       id: 1,
-      title: 'รัตพงษ์ ปานเจริญ',
-      description: 'มาเก็บมะม่วงที่บ้านในถึงที่43ยอดต้นที่38ต้นที่22',
+      title: 'Munin Phoolphon',
+      description: 'มาเก็บมะม่วงที่บ้านเลขที่43ยอดต้นที่38ต้นที่22',
     },
     {
       id: 2,
