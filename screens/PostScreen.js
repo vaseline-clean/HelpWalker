@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: '#0078fe',
+    backgroundColor: '#4CAF50',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
