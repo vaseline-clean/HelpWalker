@@ -5,14 +5,41 @@ export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (email === '' || password === '') {
       alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
     } else {
       // นำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
       navigation.replace('MainTabs');
     }
+
+    try {
+      const response = await fetch('http://10.26.137.27:3000', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+        // ,
+        // body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        // บันทึก token ลงใน AsyncStorage หรือ Context ไว้ใช้งานในการเรียก API ต่อไป
+        // และนำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
+        navigation.replace('MainTabs');
+      } else {
+        alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
+      }
+    } catch (error) {
+      alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+    }
+    
+
+
   };
+
+  
 
   return (
     <View style={styles.container}>
