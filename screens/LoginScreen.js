@@ -8,14 +8,14 @@ export default function LoginScreen({ navigation }) {
   const handleLogin = async () => {
     if (email === '' || password === '') {
       alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
-    } else {
-      // นำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
-      navigation.replace('MainTabs');
+    // } else {
+    //   // นำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
+    //   navigation.replace('MainTabs');
     }
 
     try {
-      const response = await fetch('http://10.26.137.27:3000', {
-        method: 'POST',
+      const response = await fetch('http://10.26.137.27:3000/auth/login', {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         }
@@ -33,10 +33,9 @@ export default function LoginScreen({ navigation }) {
       }
     } catch (error) {
       alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+      console.error(error);
     }
-    
-
-
+  
   };
 
   
