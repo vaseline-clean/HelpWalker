@@ -32,7 +32,7 @@ export default function SignupScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch('http://your-backend-url/api/auth/register', {
+      const response = await fetch('http://10.26.137.27:3000/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
