@@ -7,7 +7,6 @@ import {
   TextInput,
   ScrollView,
   Alert,
-  Image,
 } from 'react-native';
 
 export default function SignupScreen({ navigation }) {
@@ -32,7 +31,7 @@ export default function SignupScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch('http://your-backend-url/api/auth/register', {
+      const response = await fetch('http://10.30.9.22:3000/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,21 +51,10 @@ export default function SignupScreen({ navigation }) {
     }
   };
 
-  const handleGoogleSignup = () => {
-    Alert.alert('สมัครใช้งานด้วย Google', 'ฟังก์ชันนี้อยู่ระหว่างการพัฒนา');
-    // เพิ่มฟังก์ชันการสมัครด้วย Google ที่นี่
-  };
-
-  const handleFacebookSignup = () => {
-    Alert.alert('สมัครใช้งานด้วย Facebook', 'ฟังก์ชันนี้อยู่ระหว่างการพัฒนา');
-    // เพิ่มฟังก์ชันการสมัครด้วย Facebook ที่นี่
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>สร้างบัญชีใหม่</Text>
 
-      {/* ฟอร์มกรอกข้อมูล */}
       <TextInput
         style={styles.input}
         placeholder="ชื่อ"
@@ -101,20 +89,10 @@ export default function SignupScreen({ navigation }) {
         onChangeText={(text) => handleInputChange('address', text)}
       />
 
-      {/* ปุ่มสมัครใช้งาน */}
       <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
         <Text style={styles.buttonText}>สมัครใช้งาน</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity
-         style={styles.linkButton}
-         onPress={() => navigation.navigate('AnotherLoginScreen')}
-         >
-            <Text style={styles.linkText1}>เลือกวิธีสมัครแบบอื่น</Text>
-      </TouchableOpacity>
 
-
-      {/* ปุ่มกลับไปหน้าล็อคอิน */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('Login')}
@@ -161,35 +139,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  orText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
-  },
   linkButton: {
     marginTop: 10,
   },
   linkText: {
     color: '#FF0033',
-    fontSize: 16,
-    textDecorationLine: 'underline',
-  },
-  linkText1: {
-    color: '#007bff',
     fontSize: 16,
     textDecorationLine: 'underline',
   },
