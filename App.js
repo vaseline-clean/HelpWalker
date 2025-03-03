@@ -11,6 +11,7 @@ import ChatScreen from './screens/ChatScreen';
 import ListScreen from './screens/ListScreen';
 import ProfindScreen from './screens/ProfindScreen';
 
+
 const Stack = createStackNavigator();
 
 export default function App() {
