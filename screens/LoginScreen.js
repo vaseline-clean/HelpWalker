@@ -2,28 +2,33 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [user_email, setEmail] = useState('');
+  const [user_password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    if (email === '' || password === '') {
+    if (user_email === '' || user_password === '') {
       alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
-    // } else {
-    //   // นำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
-    //   navigation.replace('MainTabs');
+      return;
     }
 
     try {
-      const response = await fetch('http://10.26.137.27:3000/auth/login', {
-        method: 'GET',
+      const response = await fetch('http://10.30.136.55:3000/auth/login', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        }
-        ,
-        body: JSON.stringify({ email, password }),
+        },
+        body: JSON.stringify({ user_email, user_password }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.clone().json();
+      } catch (error) {
+        const responseText = await response.text();
+        console.error('Response text:', responseText);
+        data = { message: responseText };
+      }
+
       if (response.ok) {
         // บันทึก token ลงใน AsyncStorage หรือ Context ไว้ใช้งานในการเรียก API ต่อไป
         // และนำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
@@ -35,10 +40,7 @@ export default function LoginScreen({ navigation }) {
       alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
       console.error(error);
     }
-  
   };
-
-  
 
   return (
     <View style={styles.container}>
@@ -49,7 +51,7 @@ export default function LoginScreen({ navigation }) {
         style={styles.input}
         placeholder="อีเมล"
         keyboardType="email-address"
-        value={email}
+        value={user_email}
         onChangeText={setEmail}
       />
 
@@ -57,7 +59,7 @@ export default function LoginScreen({ navigation }) {
         style={styles.input}
         placeholder="รหัสผ่าน"
         secureTextEntry
-        value={password}
+        value={user_password}
         onChangeText={setPassword}
       />
 
@@ -65,7 +67,7 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.buttonText}>ล็อกอิน</Text>
       </TouchableOpacity>
 
-   {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
+      {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('AnotherLoginScreen')}
@@ -73,15 +75,13 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.linkText}>เลือกวิธีการเข้าสู่ระบบอื่น</Text>
       </TouchableOpacity>
       
-      {/*ปุ่มสำหรัยไปยังหน้าสมัคร*/}
+      {/* ปุ่มสำหรับไปยังหน้าสมัคร */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('SindupScreen')}
       >
         <Text style={styles.linkText1}>ยังไม่มีบัญชี?</Text>
       </TouchableOpacity>
-
-   
     </View>
   );
 }
