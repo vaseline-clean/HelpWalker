@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 import MapView, { Marker } from 'react-native-maps';
@@ -9,13 +9,13 @@ export default function PostScreen({ navigation }) {
   const [address, setAddress] = useState('');
   const [mission, setMission] = useState('');
   const [reward, setReward] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [region, setRegion] = useState({
     latitude: 13.7563, // ค่าเริ่มต้น (กรุงเทพฯ)
     longitude: 100.5018,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   });
-  const [selectedLocation, setSelectedLocation] = useState(null);
 
   // ดึงตำแหน่งปัจจุบัน
   const getCurrentLocation = async () => {
@@ -61,12 +61,20 @@ export default function PostScreen({ navigation }) {
       return;
     }
 
-    Alert.alert(
-      'ภารกิจถูกสร้างแล้ว!',
-      `ชื่อ: ${name}\nที่อยู่: ${address}\nภารกิจ: ${mission}\nของตอบแทน: ${reward || 'ไม่มีระบุ'}`
-    );
+    const newMission = {
+      name,
+      address,
+      mission,
+      reward: reward || 'ไม่มีระบุ',
+      location: selectedLocation,
+    };
 
-    // ล้างฟอร์ม
+    console.log('New Mission:', newMission); // ตรวจสอบข้อมูลก่อนนำทาง
+
+    // นำทางไปยัง FeedScreen และส่งข้อมูลภารกิจไปด้วย
+    navigation.navigate('Feed', { newMission });
+
+    // ล้างค่าฟอร์มหลังจากสร้างภารกิจ
     setName('');
     setAddress('');
     setMission('');
@@ -93,7 +101,13 @@ export default function PostScreen({ navigation }) {
         </MapView>
 
         <Text style={styles.label}>ภารกิจที่ต้องการให้ช่วย</Text>
-        <TextInput style={[styles.input, styles.textArea]} value={mission} onChangeText={setMission} placeholder="กรอกภารกิจที่ต้องการให้ช่วย" multiline />
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          value={mission}
+          onChangeText={setMission}
+          placeholder="กรอกภารกิจที่ต้องการให้ช่วย"
+          multiline
+        />
 
         <Text style={styles.label}>ของตอบแทน (ไม่จำเป็นต้องเป็นเงิน)</Text>
         <TextInput style={styles.input} value={reward} onChangeText={setReward} placeholder="กรอกของตอบแทน (ถ้ามี)" />
