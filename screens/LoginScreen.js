@@ -12,7 +12,7 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch('http://10.30.136.56:3000/auth/login', {
+      const response = await fetch('http://10.30.136.55:3000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,7 +37,11 @@ export default function LoginScreen({ navigation }) {
         alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
       }
     } catch (error) {
-      alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+      if (error.message === 'Network request failed') {
+        alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+      } else {
+        alert('เกิดข้อผิดพลาดในการล็อกอิน');
+      }
       console.error(error);
     }
   };
