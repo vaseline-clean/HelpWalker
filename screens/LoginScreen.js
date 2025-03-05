@@ -13,14 +13,14 @@ export default function LoginScreen({ navigation }) {
     return;
   }
 
-    try {
-      const response = await fetch('http://10.30.136.56:3000/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_email, user_password }),
-      });
+  try {
+    const response = await fetch('http://10.30.136.56:3001/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_email, user_password }),
+    });
 
     let data;
     try {
@@ -31,18 +31,26 @@ export default function LoginScreen({ navigation }) {
       data = { message: responseText };
     }
 
-      if (response.ok) {
-        // บันทึก token ลงใน AsyncStorage หรือ Context ไว้ใช้งานในการเรียก API ต่อไป
-        // และนำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
-        navigation.replace('MainTabs');
-      } else {
-        alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
-      }
-    } catch (error) {
-      alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
-      console.error(error);
+    if (response.ok) {
+      // Store token in AsyncStorage
+      await AsyncStorage.setItem('userToken', data.token);  // Assuming the token is in the response
+
+      // Log the token to console
+      console.log('Token:', data.token);
+
+      // Show a success alert with token
+      Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบแล้ว!', [
+        { text: 'ตกลง', onPress: () => navigation.replace('MainTabs') },
+      ]);
+    } else {
+      alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
     }
-  };
+  } catch (error) {
+    alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+    console.error(error);
+  }
+};
+
 
   return (
     <View style={styles.container}>
