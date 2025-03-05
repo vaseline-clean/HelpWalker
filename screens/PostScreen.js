@@ -3,6 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert 
 import CustomHeader from '../components/CustomHeader';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import { jwtDecode } from 'jwt-decode';
 
 export default function PostScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -16,7 +18,16 @@ export default function PostScreen({ navigation }) {
     longitudeDelta: 0.01,
   });
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [token, setToken] = useState(null);
 
+  useEffect(() => {
+    const getToken = async () => {
+      const storedToken = await AsyncStorage.getItem('userToken');
+      setToken(storedToken);
+    };
+    getToken();
+  }, []);
+  // Get current location
   const getCurrentLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -26,7 +37,7 @@ export default function PostScreen({ navigation }) {
 
     const location = await Location.getCurrentPositionAsync({});
     const { latitude, longitude } = location.coords;
-    
+
     setSelectedLocation({ latitude, longitude });
     setRegion({ latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 });
     setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
@@ -39,28 +50,51 @@ export default function PostScreen({ navigation }) {
     setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
   };
 
+  // Get token from AsyncStorage and post task with user_id
   const handlePostTask = async () => {
-    try {
-      const response = await fetch('http://10.30.136.56:3000/auth/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: name,
-          description: mission,
-          createdBy: 'UserID',
-          reward: reward,
-          address: address,
-        }),
-      });
-
-      const data = await response.json();
-      console.log('Task Created:', data);
-      Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
-    } catch (error) {
-      console.error('Error posting task:', error);
-      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
+  try {
+    // ดึง token
+    const token = await AsyncStorage.getItem('userToken'); // ใช้ชื่อเดียวกัน
+    if (!token) {
+      Alert.alert('ข้อผิดพลาด', 'คุณต้องเข้าสู่ระบบก่อน');
+      return;
     }
-  };
+
+    // ถอดรหัส token เพื่อดึง user_id
+const decodedToken = jwtDecode(token);
+    console.log('Decoded Token:', decodedToken); // ตรวจสอบโครงสร้าง token
+
+    const user_id = decodedToken?.user_id || decodedToken?.id; // ตรวจสอบว่าค่าถูกต้อง
+
+    if (!user_id) {
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้จาก Token ได้');
+      return;
+    }
+
+    // ส่งข้อมูลไปยัง API
+    const response = await fetch('http://10.30.136.56:3001/tasks/add-tasks', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // เผื่อ API ต้องการ Authentication
+      },
+      body: JSON.stringify({
+        title: name,
+        description: mission,
+        createdBy: user_id, // ส่ง user_id
+        reward: reward,
+        address: address,
+      }),
+    });
+
+    const data = await response.json();
+    console.log('Task Created:', data);
+    Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
+  } catch (error) {
+    console.error('Error posting task:', error);
+    Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
+  }
+};
 
   const createMission = () => {
     if (!name || !address || !mission) {
@@ -124,6 +158,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#f9f9f9',
   },
+
   textArea: {
     height: 80,
     textAlignVertical: 'top',
