@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f0f5ff',
     alignItems: 'center',
+    marginTop: 50,
     padding: 20,
   },
   title: {
@@ -134,6 +135,7 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 50,
+    marginTop: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
     paddingHorizontal: 15,

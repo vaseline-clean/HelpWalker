@@ -10,10 +10,15 @@ export default function CustomHeader({
   setSearchQuery = () => {},
 }) {
   const handleGoBack = () => {
-    if (navigation.canGoBack()) {
+    const state = navigation.getState();
+    const previousRoute = state.routes[state.index - 1]?.name;
+
+    if (previousRoute === 'Login' || previousRoute === 'Register') {
+      Alert.alert('แจ้งเตือน', 'ไม่สามารถย้อนกลับไปยังหน้า Login หรือ Register ได้');
+    } else if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      alert('ไม่มีหน้าก่อนหน้าให้ย้อนกลับ');
+      Alert.alert('แจ้งเตือน', 'ไม่มีหน้าก่อนหน้าให้ย้อนกลับ');
     }
   };
 
@@ -25,14 +30,12 @@ export default function CustomHeader({
         {
           text: 'แก้ไขโปรไฟล์',
           onPress: () => {
-            // ไปยังหน้าตกแต่งโปรไฟล์
             navigation.navigate('ProfindScreen');
           },
         },
         {
           text: 'ล็อกเอาท์',
           onPress: () => {
-            // ทำการล็อกเอาท์และกลับไปที่หน้า LoginScreen
             navigation.replace('Login');
           },
         },
@@ -44,7 +47,6 @@ export default function CustomHeader({
       { cancelable: true }
     );
   };
-  
 
   return (
     <View style={styles.header}>
@@ -74,6 +76,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
+    marginTop: 50,
     height: 60,
     paddingHorizontal: 10,
     backgroundColor: '#FF9900',
