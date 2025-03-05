@@ -3,6 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert 
 import CustomHeader from '../components/CustomHeader';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import { jwtDecode } from 'jwt-decode';
 
 export default function PostScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -16,6 +18,7 @@ export default function PostScreen({ navigation }) {
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   });
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   // ดึงตำแหน่งปัจจุบัน
   const getCurrentLocation = async () => {
@@ -27,54 +30,77 @@ export default function PostScreen({ navigation }) {
 
     const location = await Location.getCurrentPositionAsync({});
     const { latitude, longitude } = location.coords;
-    
-    setSelectedLocation({ latitude, longitude });
-    setRegion({
-      latitude,
-      longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
 
+    setSelectedLocation({ latitude, longitude });
+    setRegion({ latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 });
     setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
   };
 
-  // ฟังก์ชันเลือกตำแหน่งบนแผนที่
   const handleMapPress = (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setSelectedLocation({ latitude, longitude });
-
-    setRegion({
-      latitude,
-      longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
-
+    setRegion({ latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 });
     setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
   };
 
-  // ฟังก์ชันสร้างภารกิจ
+  // Get token from AsyncStorage and post task with user_id
+  const handlePostTask = async () => {
+  try {
+    // ดึง token
+    const token = await AsyncStorage.getItem('userToken'); // ใช้ชื่อเดียวกัน
+    if (!token) {
+      Alert.alert('ข้อผิดพลาด', 'คุณต้องเข้าสู่ระบบก่อน');
+      return;
+    }
+
+    // ถอดรหัส token เพื่อดึง user_id
+const decodedToken = jwtDecode(token);
+    console.log('Decoded Token:', decodedToken); // ตรวจสอบโครงสร้าง token
+
+    const user_id = decodedToken?.user_id || decodedToken?.id; // ตรวจสอบว่าค่าถูกต้อง
+
+    if (!user_id) {
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้จาก Token ได้');
+      return;
+    }
+
+    // ส่งข้อมูลไปยัง API
+    const response = await fetch('http://10.30.136.56:3001/tasks/add-tasks', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // เผื่อ API ต้องการ Authentication
+      },
+      body: JSON.stringify({
+        title: name,
+        description: mission,
+        createdBy: user_id, // ส่ง user_id
+        reward: reward,
+        address: address,
+      }),
+    });
+
+    const data = await response.json();
+    console.log('Task Created:', data);
+    Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
+  } catch (error) {
+    console.error('Error posting task:', error);
+    Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
+  }
+};
+
   const createMission = () => {
     if (!name || !address || !mission) {
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
       return;
     }
 
-    const newMission = {
-      name,
-      address,
-      mission,
-      reward: reward || 'ไม่มีระบุ',
-      location: selectedLocation,
-    };
+    Alert.alert(
+      'ภารกิจถูกสร้างแล้ว!',
+      `ชื่อ: ${name}\nที่อยู่: ${address}\nภารกิจ: ${mission}\nของตอบแทน: ${reward || 'ไม่มีระบุ'}`
+    );
 
-    console.log('New Mission:', newMission); // ตรวจสอบข้อมูลก่อนนำทาง
-
-    // นำทางไปยัง FeedScreen และส่งข้อมูลภารกิจไปด้วย
-    navigation.navigate('Feed', { newMission });
-
-    // ล้างค่าฟอร์มหลังจากสร้างภารกิจ
+    // ล้างฟอร์ม
     setName('');
     setAddress('');
     setMission('');
@@ -142,12 +168,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#f9f9f9',
   },
+
   textArea: {
     height: 80,
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: '#0078fe',
+    backgroundColor: '#4CAF50',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
@@ -171,4 +198,3 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 });
-

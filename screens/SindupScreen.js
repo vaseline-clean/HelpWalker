@@ -7,16 +7,15 @@ import {
   TextInput,
   ScrollView,
   Alert,
-  Image,
 } from 'react-native';
 
 export default function SignupScreen({ navigation }) {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    phone: '',
-    address: '',
+    user_name: '',
+    user_email: '',
+    user_password: '',
+    user_phone: '',
+    user_address: '',
     score: 0, // ค่าเริ่มต้นเป็น 0
   });
 
@@ -25,14 +24,14 @@ export default function SignupScreen({ navigation }) {
   };
 
   const handleSignup = async () => {
-    const { name, email, password, phone, address } = formData;
-    if (!name || !email || !password || !phone || !address) {
+    const { user_name, user_email, user_password, user_phone, user_address } = formData;
+    if (!user_name || !user_email || !user_password || !user_phone || !user_address) {
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลให้ครบทุกช่อง');
       return;
     }
 
     try {
-      const response = await fetch('http://your-backend-url/api/auth/register', {
+      const response = await fetch('http://10.30.136.56:3000/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,7 +39,15 @@ export default function SignupScreen({ navigation }) {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.clone().json();
+      } catch (error) {
+        const responseText = await response.text();
+        console.error('Response text:', responseText);
+        data = { message: responseText };
+      }
+
       if (response.ok) {
         Alert.alert('สำเร็จ', 'สมัครใช้งานสำเร็จแล้ว');
         navigation.navigate('Login');
@@ -49,72 +56,52 @@ export default function SignupScreen({ navigation }) {
       }
     } catch (error) {
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+      console.error(error);
     }
-  };
-
-  const handleGoogleSignup = () => {
-    Alert.alert('สมัครใช้งานด้วย Google', 'ฟังก์ชันนี้อยู่ระหว่างการพัฒนา');
-    // เพิ่มฟังก์ชันการสมัครด้วย Google ที่นี่
-  };
-
-  const handleFacebookSignup = () => {
-    Alert.alert('สมัครใช้งานด้วย Facebook', 'ฟังก์ชันนี้อยู่ระหว่างการพัฒนา');
-    // เพิ่มฟังก์ชันการสมัครด้วย Facebook ที่นี่
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>สร้างบัญชีใหม่</Text>
 
-      {/* ฟอร์มกรอกข้อมูล */}
       <TextInput
         style={styles.input}
         placeholder="ชื่อ"
-        value={formData.name}
-        onChangeText={(text) => handleInputChange('name', text)}
+        value={formData.user_name}
+        onChangeText={(text) => handleInputChange('user_name', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="อีเมล"
-        value={formData.email}
+        value={formData.user_email}
         keyboardType="email-address"
-        onChangeText={(text) => handleInputChange('email', text)}
+        onChangeText={(text) => handleInputChange('user_email', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="รหัสผ่าน"
-        value={formData.password}
+        value={formData.user_password}
         secureTextEntry
-        onChangeText={(text) => handleInputChange('password', text)}
+        onChangeText={(text) => handleInputChange('user_password', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="เบอร์โทรศัพท์"
-        value={formData.phone}
+        value={formData.user_phone}
         keyboardType="phone-pad"
-        onChangeText={(text) => handleInputChange('phone', text)}
+        onChangeText={(text) => handleInputChange('user_phone', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="ที่อยู่"
-        value={formData.address}
-        onChangeText={(text) => handleInputChange('address', text)}
+        value={formData.user_address}
+        onChangeText={(text) => handleInputChange('user_address', text)}
       />
 
-      {/* ปุ่มสมัครใช้งาน */}
       <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
         <Text style={styles.buttonText}>สมัครใช้งาน</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity
-         style={styles.linkButton}
-         onPress={() => navigation.navigate('AnotherLoginScreen')}
-         >
-            <Text style={styles.linkText1}>เลือกวิธีสมัครแบบอื่น</Text>
-      </TouchableOpacity>
 
-
-      {/* ปุ่มกลับไปหน้าล็อคอิน */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('Login')}
@@ -161,35 +148,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  orText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
-  },
   linkButton: {
     marginTop: 10,
   },
   linkText: {
     color: '#FF0033',
-    fontSize: 16,
-    textDecorationLine: 'underline',
-  },
-  linkText1: {
-    color: '#007bff',
     fontSize: 16,
     textDecorationLine: 'underline',
   },

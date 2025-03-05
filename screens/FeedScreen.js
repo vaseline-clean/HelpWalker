@@ -58,10 +58,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0078fe',
   },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#999',
+  missionInfo: {
+    fontSize: 14,
+    color: '#004d40',
+    marginBottom: 10,
+  },
+  acceptButton: {
+    backgroundColor: '#00796b',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    alignSelf: 'flex-end',
+  },
+  acceptButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
