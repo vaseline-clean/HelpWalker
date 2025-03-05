@@ -17,7 +17,6 @@ export default function PostScreen({ navigation }) {
   });
   const [selectedLocation, setSelectedLocation] = useState(null);
 
-  // ดึงตำแหน่งปัจจุบัน
   const getCurrentLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -29,49 +28,46 @@ export default function PostScreen({ navigation }) {
     const { latitude, longitude } = location.coords;
     
     setSelectedLocation({ latitude, longitude });
-    setRegion({
-      latitude,
-      longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
-
+    setRegion({ latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 });
     setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
   };
 
-  // ฟังก์ชันเลือกตำแหน่งบนแผนที่
   const handleMapPress = (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setSelectedLocation({ latitude, longitude });
-
-    setRegion({
-      latitude,
-      longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
-
+    setRegion({ latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 });
     setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
   };
 
-  // ฟังก์ชันสร้างภารกิจ
+  const handlePostTask = async () => {
+    try {
+      const response = await fetch('http://10.30.136.56:3000/auth/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: name,
+          description: mission,
+          createdBy: 'UserID',
+          reward: reward,
+          address: address,
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Task Created:', data);
+      Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
+    } catch (error) {
+      console.error('Error posting task:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
+    }
+  };
+
   const createMission = () => {
     if (!name || !address || !mission) {
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
       return;
     }
-
-    Alert.alert(
-      'ภารกิจถูกสร้างแล้ว!',
-      `ชื่อ: ${name}\nที่อยู่: ${address}\nภารกิจ: ${mission}\nของตอบแทน: ${reward || 'ไม่มีระบุ'}`
-    );
-
-    // ล้างฟอร์ม
-    setName('');
-    setAddress('');
-    setMission('');
-    setReward('');
-    setSelectedLocation(null);
+    handlePostTask();
   };
 
   return (
@@ -157,4 +153,3 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 });
-
