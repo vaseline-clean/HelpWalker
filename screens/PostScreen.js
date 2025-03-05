@@ -18,7 +18,6 @@ export default function PostScreen({ navigation }) {
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   });
-  const [selectedLocation, setSelectedLocation] = useState(null);
 
   // ดึงตำแหน่งปัจจุบัน
   const getCurrentLocation = async () => {
