@@ -1,71 +1,86 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';  // Import AsyncStorage
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [user_email, setEmail] = useState('');
+  const [user_password, setPassword] = useState('');
 
+  // Handle the login process
   const handleLogin = async () => {
-    if (email === '' || password === '') {
-      alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
-    // } else {
-    //   // นำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
-    //   navigation.replace('MainTabs');
-    }
+  if (user_email === '' || user_password === '') {
+    alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
+    return;
+  }
 
+  try {
+    const response = await fetch('http://10.30.136.56:3001/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_email, user_password }),
+    });
+
+    let data;
     try {
-      const response = await fetch('http://10.26.137.27:3000/auth/login', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-        ,
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        // บันทึก token ลงใน AsyncStorage หรือ Context ไว้ใช้งานในการเรียก API ต่อไป
-        // และนำทางไปยัง FeedScreen หลังจากล็อกอินสำเร็จ
-        navigation.replace('MainTabs');
-      } else {
-        alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
-      }
+      data = await response.clone().json();
     } catch (error) {
-      alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
-      console.error(error);
+      const responseText = await response.text();
+      console.error('Response text:', responseText);
+      data = { message: responseText };
     }
-  
-  };
 
-  
+    if (response.ok) {
+      // Store token in AsyncStorage
+      await AsyncStorage.setItem('userToken', data.token);  // Assuming the token is in the response
+
+      // Log the token to console
+      console.log('Token:', data.token);
+
+      // Show a success alert with token
+      Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบแล้ว!', [
+        { text: 'ตกลง', onPress: () => navigation.replace('MainTabs') },
+      ]);
+    } else {
+      alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
+    }
+  } catch (error) {
+    alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+    console.error(error);
+  }
+};
+
 
   return (
     <View style={styles.container}>
       <Image source={require('./assets/logo.png')} style={styles.logo} />
       <Text style={styles.title}>เข้าสู่ระบบ</Text>
 
+      {/* Email input field */}
       <TextInput
         style={styles.input}
         placeholder="อีเมล"
         keyboardType="email-address"
-        value={email}
+        value={user_email}
         onChangeText={setEmail}
       />
 
+      {/* Password input field */}
       <TextInput
         style={styles.input}
         placeholder="รหัสผ่าน"
         secureTextEntry
-        value={password}
+        value={user_password}
         onChangeText={setPassword}
       />
 
+      {/* Login button */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>ล็อกอิน</Text>
       </TouchableOpacity>
 
-   {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
+      {/* Button to navigate to another login screen */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('AnotherLoginScreen')}
@@ -73,15 +88,13 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.linkText}>เลือกวิธีการเข้าสู่ระบบอื่น</Text>
       </TouchableOpacity>
       
-      {/*ปุ่มสำหรัยไปยังหน้าสมัคร*/}
+      {/* Button to navigate to signup screen */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('SindupScreen')}
       >
         <Text style={styles.linkText1}>ยังไม่มีบัญชี?</Text>
       </TouchableOpacity>
-
-   
     </View>
   );
 }

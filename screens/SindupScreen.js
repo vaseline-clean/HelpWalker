@@ -11,11 +11,11 @@ import {
 
 export default function SignupScreen({ navigation }) {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    phone: '',
-    address: '',
+    user_name: '',
+    user_email: '',
+    user_password: '',
+    user_phone: '',
+    user_address: '',
     score: 0, // ค่าเริ่มต้นเป็น 0
   });
 
@@ -24,14 +24,14 @@ export default function SignupScreen({ navigation }) {
   };
 
   const handleSignup = async () => {
-    const { name, email, password, phone, address } = formData;
-    if (!name || !email || !password || !phone || !address) {
+    const { user_name, user_email, user_password, user_phone, user_address } = formData;
+    if (!user_name || !user_email || !user_password || !user_phone || !user_address) {
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลให้ครบทุกช่อง');
       return;
     }
 
     try {
-      const response = await fetch('http://10.30.9.22:3000/users/register', {
+      const response = await fetch('http://10.30.136.56:3000/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +39,15 @@ export default function SignupScreen({ navigation }) {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.clone().json();
+      } catch (error) {
+        const responseText = await response.text();
+        console.error('Response text:', responseText);
+        data = { message: responseText };
+      }
+
       if (response.ok) {
         Alert.alert('สำเร็จ', 'สมัครใช้งานสำเร็จแล้ว');
         navigation.navigate('Login');
@@ -48,6 +56,7 @@ export default function SignupScreen({ navigation }) {
       }
     } catch (error) {
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+      console.error(error);
     }
   };
 
@@ -58,35 +67,35 @@ export default function SignupScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="ชื่อ"
-        value={formData.name}
-        onChangeText={(text) => handleInputChange('name', text)}
+        value={formData.user_name}
+        onChangeText={(text) => handleInputChange('user_name', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="อีเมล"
-        value={formData.email}
+        value={formData.user_email}
         keyboardType="email-address"
-        onChangeText={(text) => handleInputChange('email', text)}
+        onChangeText={(text) => handleInputChange('user_email', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="รหัสผ่าน"
-        value={formData.password}
+        value={formData.user_password}
         secureTextEntry
-        onChangeText={(text) => handleInputChange('password', text)}
+        onChangeText={(text) => handleInputChange('user_password', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="เบอร์โทรศัพท์"
-        value={formData.phone}
+        value={formData.user_phone}
         keyboardType="phone-pad"
-        onChangeText={(text) => handleInputChange('phone', text)}
+        onChangeText={(text) => handleInputChange('user_phone', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="ที่อยู่"
-        value={formData.address}
-        onChangeText={(text) => handleInputChange('address', text)}
+        value={formData.user_address}
+        onChangeText={(text) => handleInputChange('user_address', text)}
       />
 
       <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
