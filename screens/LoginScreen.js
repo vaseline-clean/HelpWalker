@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';  // Import AsyncStorage
 
 export default function LoginScreen({ navigation }) {
   const [user_email, setEmail] = useState('');
   const [user_password, setPassword] = useState('');
 
+  // Handle the login process
   const handleLogin = async () => {
-    if (user_email === '' || user_password === '') {
-      alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
-      return;
-    }
+  if (user_email === '' || user_password === '') {
+    alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
+    return;
+  }
 
     try {
-      const response = await fetch('http://10.30.136.55:3000/auth/login', {
+      const response = await fetch('http://10.30.136.56:3000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -20,14 +22,14 @@ export default function LoginScreen({ navigation }) {
         body: JSON.stringify({ user_email, user_password }),
       });
 
-      let data;
-      try {
-        data = await response.clone().json();
-      } catch (error) {
-        const responseText = await response.text();
-        console.error('Response text:', responseText);
-        data = { message: responseText };
-      }
+    let data;
+    try {
+      data = await response.clone().json();
+    } catch (error) {
+      const responseText = await response.text();
+      console.error('Response text:', responseText);
+      data = { message: responseText };
+    }
 
       if (response.ok) {
         // บันทึก token ลงใน AsyncStorage หรือ Context ไว้ใช้งานในการเรียก API ต่อไป
@@ -37,11 +39,7 @@ export default function LoginScreen({ navigation }) {
         alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
       }
     } catch (error) {
-      if (error.message === 'Network request failed') {
-        alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
-      } else {
-        alert('เกิดข้อผิดพลาดในการล็อกอิน');
-      }
+      alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
       console.error(error);
     }
   };
@@ -51,6 +49,7 @@ export default function LoginScreen({ navigation }) {
       <Image source={require('./assets/logo.png')} style={styles.logo} />
       <Text style={styles.title}>เข้าสู่ระบบ</Text>
 
+      {/* Email input field */}
       <TextInput
         style={styles.input}
         placeholder="อีเมล"
@@ -59,6 +58,7 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setEmail}
       />
 
+      {/* Password input field */}
       <TextInput
         style={styles.input}
         placeholder="รหัสผ่าน"
@@ -67,11 +67,12 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setPassword}
       />
 
+      {/* Login button */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>ล็อกอิน</Text>
       </TouchableOpacity>
 
-      {/* ปุ่มสำหรับไปยัง AnotherLoginScreen */}
+      {/* Button to navigate to another login screen */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('AnotherLoginScreen')}
@@ -79,7 +80,7 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.linkText}>เลือกวิธีการเข้าสู่ระบบอื่น</Text>
       </TouchableOpacity>
       
-      {/* ปุ่มสำหรับไปยังหน้าสมัคร */}
+      {/* Button to navigate to signup screen */}
       <TouchableOpacity
         style={styles.linkButton}
         onPress={() => navigation.navigate('SindupScreen')}
