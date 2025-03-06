@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'; // เพิ่ม Text และ TouchableOpacity
-import CustomHeader from '../components/CustomHeader'; 
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import CustomHeader from '../components/CustomHeader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtDecode } from 'jwt-decode';
 
-// คอมโพเนนต์ TaskCard
 const TaskCard = ({ task, onComplete, onDelete }) => {
   return (
     <View style={styles.card}>
@@ -20,20 +21,34 @@ const TaskCard = ({ task, onComplete, onDelete }) => {
   );
 };
 
-// หน้าจอ ListScreen
 export default function ListScreen({ navigation }) {
-  const tasks = [
-    {
-      id: 1,
-      title: 'Munin Phoolphon',
-      description: 'มาเก็บมะม่วงที่บ้านเลขที่43ยอดต้นที่38ต้นที่22',
-    },
-    {
-      id: 2,
-      title: 'ตัวอย่างภารกิจที่ 2',
-      description: 'รายละเอียดของภารกิจที่ 2',
-    },
-  ];
+  const [tasks, setTasks] = useState([]);
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const getToken = async () => {
+      const storedToken = await AsyncStorage.getItem('userToken');
+      setToken(storedToken);
+      console.log('Stored Token:', storedToken); // Debugging token
+    };
+    getToken();
+  }, []);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch('http://10.30.136.56:3001/tasks');
+        const data = await response.json();
+        console.log('Fetched Tasks:', data); // Debugging fetched tasks
+        setTasks(data);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
+      }
+    };
+
+    fetchTasks();
+  }, [token]);
 
   const handleComplete = (id) => {
     console.log(`ภารกิจ ${id} เสร็จแล้ว`);
