@@ -24,52 +24,123 @@ const TaskCard = ({ task, onComplete, onDelete }) => {
 export default function ListScreen({ navigation }) {
   const [tasks, setTasks] = useState([]);
   const [token, setToken] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const getToken = async () => {
       const storedToken = await AsyncStorage.getItem('userToken');
       setToken(storedToken);
-      console.log('Stored Token:', storedToken); // Debugging token
+      if (storedToken) {
+        const decodedToken = jwtDecode(storedToken);
+        setUserId(decodedToken.user_id);
+      }
     };
     getToken();
   }, []);
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await fetch('http://10.30.136.56:3001/tasks');
-        const data = await response.json();
-        console.log('Fetched Tasks:', data); // Debugging fetched tasks
-        setTasks(data);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
-      }
-    };
+  const fetchTasks = async () => {
+    try {
+      if (!token || !userId) return;
 
+      const response = await fetch(`http://10.30.136.56:3001/tasks/user-tasks/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
+    }
+  };
+
+  useEffect(() => {
     fetchTasks();
-  }, [token]);
+  }, [token, userId]);
 
   const handleComplete = (id) => {
-    console.log(`ภารกิจ ${id} เสร็จแล้ว`);
+    Alert.alert(
+      "ยืนยันการเสร็จสิ้น?",
+      "คุณแน่ใจหรือไม่ว่าต้องการทำภารกิจนี้ให้สำเร็จ?",
+      [
+        { text: "ยกเลิก", style: "cancel" },
+        {
+          text: "ยืนยัน",
+          onPress: async () => {
+            try {
+              await fetch(`http://10.30.136.56:3001/tasks/${id}/complete`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+
+              setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
+            } catch (error) {
+              console.error('Error completing task:', error);
+              Alert.alert('ข้อผิดพลาด', 'ไม่สามารถทำภารกิจให้สำเร็จได้');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleDelete = (id) => {
-    console.log(`ลบภารกิจ ${id}`);
+    Alert.alert(
+      "ยืนยันการลบ?",
+      "คุณแน่ใจหรือไม่ว่าต้องการลบภารกิจนี้?",
+      [
+        { text: "ยกเลิก", style: "cancel" },
+        {
+          text: "ลบ",
+          onPress: async () => {
+            try {
+              await fetch(`http://10.30.136.56:3001/tasks/${id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+
+              setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
+            } catch (error) {
+              console.error('Error deleting task:', error);
+              Alert.alert('ข้อผิดพลาด', 'ไม่สามารถลบภารกิจได้');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="รายการ" />
+
+      <TouchableOpacity style={styles.refreshButton} onPress={fetchTasks}>
+        <Text style={styles.refreshText}>รีเฟรช</Text>
+      </TouchableOpacity>
+
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {tasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onComplete={() => handleComplete(task.id)}
-            onDelete={() => handleDelete(task.id)}
-          />
-        ))}
+        {tasks.length > 0 ? (
+          tasks.map((task) => (
+            <TaskCard
+              key={task._id}
+              task={task}
+              onComplete={() => handleComplete(task._id)}
+              onDelete={() => handleDelete(task._id)}
+            />
+          ))
+        ) : (
+          <Text style={styles.noTaskText}>ไม่มีภารกิจในขณะนี้</Text>
+        )}
       </ScrollView>
     </View>
   );
@@ -78,10 +149,28 @@ export default function ListScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f4f4f4',
+    padding: 16,
   },
   scrollView: {
-    padding: 16,
+    paddingBottom: 16,
+  },
+  noTaskText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  refreshButton: {
+    backgroundColor: '#FFA500',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  refreshText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   card: {
     backgroundColor: '#fff',
