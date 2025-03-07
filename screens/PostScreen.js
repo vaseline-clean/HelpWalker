@@ -4,7 +4,7 @@ import CustomHeader from '../components/CustomHeader';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
-import { jwtDecode } from 'jwt-decode';
+import jwt_decode from 'jwt-decode'; // Correct import for jwt-decode
 
 export default function PostScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -27,6 +27,7 @@ export default function PostScreen({ navigation }) {
     };
     getToken();
   }, []);
+
   // Get current location
   const getCurrentLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -52,13 +53,49 @@ export default function PostScreen({ navigation }) {
 
   // Get token from AsyncStorage and post task with user_id
   const handlePostTask = async () => {
-  try {
-    // ดึง token
-    const token = await AsyncStorage.getItem('userToken'); // ใช้ชื่อเดียวกัน
-    if (!token) {
-      Alert.alert('ข้อผิดพลาด', 'คุณต้องเข้าสู่ระบบก่อน');
-      return;
+    try {
+      // ดึง token
+      const token = await AsyncStorage.getItem('userToken'); // ใช้ชื่อเดียวกัน
+      if (!token) {
+        Alert.alert('ข้อผิดพลาด', 'คุณต้องเข้าสู่ระบบก่อน');
+        return;
+      }
+
+      // ถอดรหัส token เพื่อดึง user_id
+      const decodedToken = jwt_decode(token);
+      console.log('Decoded Token:', decodedToken); // ตรวจสอบโครงสร้าง token
+
+      const user_id = decodedToken?.user_id || decodedToken?.id; // ตรวจสอบว่าค่าถูกต้อง
+
+      if (!user_id) {
+        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้จาก Token ได้');
+        return;
+      }
+
+      // ส่งข้อมูลไปยัง API
+      const response = await fetch('http://10.30.136.56:3001/tasks/add-tasks', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // เผื่อ API ต้องการ Authentication
+        },
+        body: JSON.stringify({
+          title: name,
+          description: mission,
+          createdBy: user_id, // ส่ง user_id
+          reward: reward,
+          address: address,
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Task Created:', data);
+      Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
+    } catch (error) {
+      console.error('Error posting task:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
     }
+
 
     // ถอดรหัส token เพื่อดึง user_id
     const decodedToken = jwtDecode(token);
@@ -95,6 +132,7 @@ export default function PostScreen({ navigation }) {
     Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
   }
 };
+
 
   const createMission = () => {
     if (!name || !address || !mission) {
