@@ -10,6 +10,7 @@ import FeedScreen from './screens/FeedScreen'; // Import FeedScreen
 import ChatScreen from './screens/ChatScreen';
 import ListScreen from './screens/ListScreen';
 import ProfindScreen from './screens/ProfindScreen';
+import CompletedTasksScreen from './screens/CompletedTasksScreen';
 
 
 const Stack = createStackNavigator();
@@ -66,6 +67,11 @@ export default function App() {
           name="ListScreen" 
           component={ListScreen} 
           options={{ title: 'รายการ', headerShown: true }}/>
+
+        <Stack.Screen 
+          name="CompletedTasksScreen" 
+          component={CompletedTasksScreen} 
+          options={{ headerShown: false }} />
 
 
 

@@ -95,7 +95,44 @@ export default function PostScreen({ navigation }) {
       console.error('Error posting task:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
     }
-  };
+
+
+    // ถอดรหัส token เพื่อดึง user_id
+    const decodedToken = jwtDecode(token);
+    console.log('Decoded Token:', decodedToken); // ตรวจสอบโครงสร้าง token
+
+    const user_id = decodedToken?.user_id || decodedToken?.id; // ตรวจสอบว่าค่าถูกต้อง
+
+    if (!user_id) {
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้จาก Token ได้');
+      return;
+    }
+
+    // ส่งข้อมูลไปยัง API
+    const response = await fetch('http://10.30.136.56:3001/tasks/add-tasks', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // เผื่อ API ต้องการ Authentication
+      },
+      body: JSON.stringify({
+        title: name,
+        description: mission,
+        createdBy: user_id, // ส่ง user_id
+        reward: reward,
+        address: address,
+      }),
+    });
+
+    const data = await response.json();
+    console.log('Task Created:', data);
+    Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
+  } catch (error) {
+    console.error('Error posting task:', error);
+    Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
+  }
+};
+
 
   const createMission = () => {
     if (!name || !address || !mission) {
