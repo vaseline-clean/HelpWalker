@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert 
 import CustomHeader from '../components/CustomHeader';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 
 export default function PostScreen({ navigation }) {
@@ -12,7 +12,7 @@ export default function PostScreen({ navigation }) {
   const [mission, setMission] = useState('');
   const [reward, setReward] = useState('');
   const [region, setRegion] = useState({
-    latitude: 13.7563, // ค่าเริ่มต้น (กรุงเทพฯ)
+    latitude: 13.7563,
     longitude: 100.5018,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
@@ -21,20 +21,21 @@ export default function PostScreen({ navigation }) {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const getToken = async () => {
-      const storedToken = await AsyncStorage.getItem('userToken');
-      setToken(storedToken);
-    };
-    getToken();
-  }, []);
-  // Get current location
+  const getToken = async () => {
+    const storedToken = await AsyncStorage.getItem('userToken');
+    console.log("Stored Token:", storedToken); // ตรวจสอบ token
+    setToken(storedToken);
+  };
+  getToken();
+}, []);  
+
+
   const getCurrentLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('การเข้าถึงถูกปฏิเสธ', 'กรุณาเปิดใช้งาน GPS เพื่อใช้ฟีเจอร์นี้');
       return;
     }
-
     const location = await Location.getCurrentPositionAsync({});
     const { latitude, longitude } = location.coords;
 
@@ -50,51 +51,43 @@ export default function PostScreen({ navigation }) {
     setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
   };
 
-  // Get token from AsyncStorage and post task with user_id
   const handlePostTask = async () => {
-  try {
-    // ดึง token
-    const token = await AsyncStorage.getItem('userToken'); // ใช้ชื่อเดียวกัน
-    if (!token) {
-      Alert.alert('ข้อผิดพลาด', 'คุณต้องเข้าสู่ระบบก่อน');
-      return;
+    try {
+      if (!token) {
+        Alert.alert('ข้อผิดพลาด', 'คุณต้องเข้าสู่ระบบก่อน');
+        return;
+      }
+      const decodedToken = jwtDecode(token); // Use jwtDecode correctly
+      const user_id = decodedToken?.user_id || decodedToken?.id;
+
+      if (!user_id) {
+        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้จาก Token ได้');
+        return;
+      }
+
+      const response = await fetch('http://10.30.136.56:3001/tasks/add-tasks', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: name,
+          description: mission,
+          createdBy: user_id,
+          reward: reward,
+          address: address,
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Task Created:', data);
+      Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
+    } catch (error) {
+      console.error('Error posting task:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
     }
-
-    // ถอดรหัส token เพื่อดึง user_id
-    const decodedToken = jwtDecode(token);
-    console.log('Decoded Token:', decodedToken); // ตรวจสอบโครงสร้าง token
-
-    const user_id = decodedToken?.user_id || decodedToken?.id; // ตรวจสอบว่าค่าถูกต้อง
-
-    if (!user_id) {
-      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้จาก Token ได้');
-      return;
-    }
-
-    // ส่งข้อมูลไปยัง API
-    const response = await fetch('http://10.30.136.56:3001/tasks/add-tasks', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // เผื่อ API ต้องการ Authentication
-      },
-      body: JSON.stringify({
-        title: name,
-        description: mission,
-        createdBy: user_id, // ส่ง user_id
-        reward: reward,
-        address: address,
-      }),
-    });
-
-    const data = await response.json();
-    console.log('Task Created:', data);
-    Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
-  } catch (error) {
-    console.error('Error posting task:', error);
-    Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
-  }
-};
+  };
 
   const createMission = () => {
     if (!name || !address || !mission) {
@@ -158,7 +151,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#f9f9f9',
   },
-
   textArea: {
     height: 80,
     textAlignVertical: 'top',

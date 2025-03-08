@@ -62,7 +62,7 @@ export default function ListScreen({ navigation }) {
     fetchTasks();
   }, [token, userId]);
 
-  const handleComplete = (id) => {
+  const handleComplete = async (task) => {
     Alert.alert(
       "ยืนยันการเสร็จสิ้น?",
       "คุณแน่ใจหรือไม่ว่าต้องการทำภารกิจนี้ให้สำเร็จ?",
@@ -72,15 +72,18 @@ export default function ListScreen({ navigation }) {
           text: "ยืนยัน",
           onPress: async () => {
             try {
-              await fetch(`http://10.30.136.56:3001/tasks/${id}/complete`, {
+              await fetch(`http://10.30.136.56:3001/tasks/${task._id}/complete`, {
                 method: 'PUT',
                 headers: {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`,
                 },
               });
-
-              setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
+              
+              const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
+              await AsyncStorage.setItem('completedTasks', JSON.stringify([...completedTasks, task]));
+              
+              setTasks((prevTasks) => prevTasks.filter((t) => t._id !== task._id));
             } catch (error) {
               console.error('Error completing task:', error);
               Alert.alert('ข้อผิดพลาด', 'ไม่สามารถทำภารกิจให้สำเร็จได้');
@@ -128,13 +131,17 @@ export default function ListScreen({ navigation }) {
         <Text style={styles.refreshText}>รีเฟรช</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.historyButton} onPress={() => navigation.navigate('CompletedTasksScreen')}>
+        <Text style={styles.historyText}>ประวัติภารกิจสำเร็จ</Text>
+      </TouchableOpacity>
+
       <ScrollView contentContainerStyle={styles.scrollView}>
         {tasks.length > 0 ? (
           tasks.map((task) => (
             <TaskCard
               key={task._id}
               task={task}
-              onComplete={() => handleComplete(task._id)}
+              onComplete={() => handleComplete(task)}
               onDelete={() => handleDelete(task._id)}
             />
           ))
@@ -172,16 +179,25 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  historyButton: {
+    backgroundColor: '#28a745',
+    padding: 10,
+    marginHorizontal: 20,
+    marginVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  historyText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   card: {
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 16,
     marginBottom: 16,
     elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
   },
   title: {
     fontSize: 16,
