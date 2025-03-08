@@ -127,13 +127,15 @@ export default function ListScreen({ navigation }) {
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="รายการ" />
 
-      <TouchableOpacity style={styles.refreshButton} onPress={fetchTasks}>
-        <Text style={styles.refreshText}>รีเฟรช</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.historyButton} onPress={() => navigation.navigate('CompletedTasksScreen')}>
-        <Text style={styles.historyText}>ประวัติภารกิจสำเร็จ</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.refreshButton} onPress={fetchTasks}>
+          <Text style={styles.refreshText}>รีเฟรช</Text>
+        </TouchableOpacity>
+        <View style={styles.divider} />
+        <TouchableOpacity style={styles.historyButton} onPress={() => navigation.navigate('CompletedTasksScreen')}>
+          <Text style={styles.historyText}>ประวัติภารกิจสำเร็จ</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView contentContainerStyle={styles.scrollView}>
         {tasks.length > 0 ? (
@@ -168,11 +170,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   refreshButton: {
+    flex: 1,
     backgroundColor: '#FFA500',
     padding: 10,
     borderRadius: 8,
-    marginBottom: 10,
     alignItems: 'center',
   },
   refreshText: {
@@ -180,10 +187,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   historyButton: {
+    flex: 1,
     backgroundColor: '#28a745',
     padding: 10,
-    marginHorizontal: 20,
-    marginVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
@@ -191,6 +197,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  divider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: '#ccc',
+    marginHorizontal: 10,
   },
   card: {
     backgroundColor: '#fff',
