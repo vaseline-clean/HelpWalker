@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // นำเข้าไลบรารี
 
 export default function PostScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -21,14 +22,13 @@ export default function PostScreen({ navigation }) {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-  const getToken = async () => {
-    const storedToken = await AsyncStorage.getItem('userToken');
-    console.log("Stored Token:", storedToken); // ตรวจสอบ token
-    setToken(storedToken);
-  };
-  getToken();
-}, []);  
-
+    const getToken = async () => {
+      const storedToken = await AsyncStorage.getItem('userToken');
+      console.log("Stored Token:", storedToken); // ตรวจสอบ token
+      setToken(storedToken);
+    };
+    getToken();
+  }, []);  
 
   const getCurrentLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -112,9 +112,16 @@ export default function PostScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
+      {/* แยก CustomHeader ออกจากการเลื่อน */}
       <CustomHeader navigation={navigation} title="โพส" />
-      <ScrollView contentContainerStyle={styles.formContainer}>
+
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        resetScrollToCoords={{ x: 0, y: 0 }} // รีเซ็ตตำแหน่งเมื่อฟอร์มถูกรีเฟรช
+        contentContainerStyle={styles.formContainer}
+        enableOnAndroid={true} // เปิดใช้งานสำหรับ Android
+      >
         <Text style={styles.label}>ชื่อ-นามสกุล</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="กรอกชื่อ-นามสกุล" />
 
@@ -138,7 +145,7 @@ export default function PostScreen({ navigation }) {
         <TouchableOpacity style={styles.button} onPress={createMission}>
           <Text style={styles.buttonText}>สร้างภารกิจ</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }
