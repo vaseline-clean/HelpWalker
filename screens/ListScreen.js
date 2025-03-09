@@ -9,7 +9,7 @@ const TaskCard = ({ task, onComplete, onDelete }) => {
     <View style={styles.card}>
       <Text style={styles.title}>{task.title}</Text>
       <Text style={styles.description}>{task.description}</Text>
-      <Text style={styles.status}>สถานะ: {task.status}</Text> {/* Add status display */}
+      <Text style={styles.status}>สถานะ: {String(task.status)}</Text> 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={[styles.button, styles.completeButton]} onPress={onComplete}>
           <Text style={styles.buttonText}>เสร็จ</Text>
