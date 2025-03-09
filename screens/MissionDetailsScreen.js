@@ -3,12 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import axios from 'axios';
 
 export default function MissionDetailsScreen({ route, navigation }) {
-  const { taskId } = route.params;
+  const { mission } = route.params;
+  const { _id: taskId, title: missionTitle, description: missionDetails, createdBy, status, createdAt, updatedAt } = mission;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`https://your-api-endpoint.com/tasks/${taskId}`)
+    axios.get(`http://10.30.136.56:3001/tasks/${taskId}`)
       .then(response => {
         setTask(response.data);
         setLoading(false);
@@ -35,7 +36,7 @@ export default function MissionDetailsScreen({ route, navigation }) {
     );
   }
 
-  const { missionTitle, missionDetails, creatorName, creatorPhone, address } = task;
+  const { creatorName, creatorPhone, address } = task;
 
   return (
     <View style={styles.container}>

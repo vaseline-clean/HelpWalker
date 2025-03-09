@@ -54,8 +54,8 @@ export default function ListScreen({ navigation }) {
       const data = await response.json();
       const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
       const completedTaskIds = completedTasks.map(task => task._id);
-      const filteredTasks = data.tasks.filter(task => !completedTaskIds.includes(task._id));
-      setTasks(Array.isArray(filteredTasks) ? filteredTasks : []);
+      const filteredTasks = Array.isArray(data.tasks) ? data.tasks.filter(task => !completedTaskIds.includes(task._id)) : [];
+      setTasks(filteredTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
