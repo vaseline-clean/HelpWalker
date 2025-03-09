@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, Button } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {jwtDecode } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
-export default function ProfileScreen({ navigation }) {
+export default function EditProfileScreen({ navigation }) {
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -29,7 +29,7 @@ export default function ProfileScreen({ navigation }) {
       try {
         if (!token || !userId) return;
 
-        const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
+        const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -52,24 +52,53 @@ export default function ProfileScreen({ navigation }) {
     fetchUserData();
   }, [token, userId]);
 
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem('userToken');
-    navigation.navigate('LoginScreen');
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (response.ok) {
+        Alert.alert('สำเร็จ', 'บันทึกข้อมูลสำเร็จ');
+        navigation.goBack();
+      } else {
+        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้');
+      }
+    } catch (error) {
+      console.error('Error saving user data:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้');
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>ชื่อ:</Text>
-      <Text style={styles.info}>{userData.name}</Text>
+      <TextInput
+        style={styles.input}
+        value={userData.name}
+        onChangeText={(text) => setUserData({ ...userData, name: text })}
+      />
 
       <Text style={styles.label}>อีเมล:</Text>
-      <Text style={styles.info}>{userData.email}</Text>
+      <TextInput
+        style={styles.input}
+        value={userData.email}
+        onChangeText={(text) => setUserData({ ...userData, email: text })}
+      />
 
       <Text style={styles.label}>เบอร์โทร:</Text>
-      <Text style={styles.info}>{userData.phone}</Text>
+      <TextInput
+        style={styles.input}
+        value={userData.phone}
+        onChangeText={(text) => setUserData({ ...userData, phone: text })}
+      />
 
-      <Button title="แก้ไขโปรไฟล์" onPress={() => navigation.navigate('EditProfileScreen')} />
-      <Button title="ออกจากระบบ" onPress={handleLogout} />
+      <Button title="บันทึก" onPress={handleSave} />
     </View>
   );
 }
@@ -86,7 +115,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: '#333',
   },
-  info: {
+  input: {
     fontSize: 16,
     marginBottom: 15,
     color: '#555',

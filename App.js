@@ -11,6 +11,7 @@ import ChatScreen from './screens/ChatScreen';
 import ListScreen from './screens/ListScreen';
 import ProfileScreen from './screens/ProfileScreen'; // Ensure this file exists
 import CompletedTasksScreen from './screens/CompletedTasksScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
 
 const Stack = createStackNavigator();
 
@@ -19,6 +20,10 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         {/* หน้าจอ Login */}
+        <Stack.Screen 
+          name="EditProfileScreen" 
+          component={EditProfileScreen} 
+          options={{ headerShown: false }}/>
         <Stack.Screen 
           name="Login" 
           component={LoginScreen} 
