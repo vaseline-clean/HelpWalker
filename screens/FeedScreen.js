@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function FeedScreen({ route, navigation }) {
   const [missions, setMissions] = useState([]);
 
-  useEffect(() => {
-    const fetchAllTasks = async () => {
-      try {
-        const token = await AsyncStorage.getItem('userToken');
-        const response = await fetch('http://10.30.136.56:3001/tasks/get-allTasks', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+  const fetchAllTasks = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const response = await fetch('http://10.30.136.56:3001/tasks/get-allTasks', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-        const data = await response.json();
-        if (response.ok) {
-          setMissions(data);
-        } else {
-          Alert.alert('ข้อผิดพลาด', data.message || 'ไม่สามารถดึงข้อมูลภารกิจได้');
-        }
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
+      const data = await response.json();
+      if (response.ok) {
+        setMissions(data);
+      } else {
+        Alert.alert('ข้อผิดพลาด', data.message || 'ไม่สามารถดึงข้อมูลภารกิจได้');
       }
-    };
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
+    }
+  };
 
+  // เรียกใช้งาน fetchAllTasks เมื่อเริ่มต้น
+  useEffect(() => {
     fetchAllTasks();
   }, []);
 
@@ -43,6 +44,12 @@ export default function FeedScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="ฟีด" />
+      
+      {/* ปุ่มรีเฟรช */}
+      <TouchableOpacity style={styles.refreshButton} onPress={fetchAllTasks}>
+        <Text style={styles.refreshText}>รีเฟรช</Text>
+      </TouchableOpacity>
+
       <FlatList
         data={missions}
         keyExtractor={(item, index) => index.toString()}
@@ -63,7 +70,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    padding: 1,
+  },
+  refreshButton: {
+    backgroundColor: '#4CAF50',
+    marginTop: 10,
     padding: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  refreshText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   missionItem: {
     padding: 15,
