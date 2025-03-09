@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jwtDecode } from 'jwt-decode';
-import Icon from 'react-native-vector-icons/Ionicons';  // นำเข้าไอคอนจาก react-native-vector-icons
+import jwtDecode from 'jwt-decode';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function ProfileScreen({ navigation }) {
   const [userData, setUserData] = useState({
@@ -30,7 +30,7 @@ export default function ProfileScreen({ navigation }) {
       try {
         if (!token || !userId) return;
 
-        const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
+        const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
