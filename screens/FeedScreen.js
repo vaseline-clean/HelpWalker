@@ -1,9 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function FeedScreen({ route, navigation }) {
   const [missions, setMissions] = useState([]);
+
+  useEffect(() => {
+    const fetchAllTasks = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const response = await fetch('http://10.30.136.56:3001/tasks/get-allTasks', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          setMissions(data);
+        } else {
+          Alert.alert('ข้อผิดพลาด', data.message || 'ไม่สามารถดึงข้อมูลภารกิจได้');
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
+      }
+    };
+
+    fetchAllTasks();
+  }, []);
 
   // ใช้ useEffect เพื่อตรวจจับ newMission ที่ถูกส่งมาจาก PostScreen
   useEffect(() => {
@@ -20,9 +48,8 @@ export default function FeedScreen({ route, navigation }) {
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.missionItem}>
-            <Text style={styles.missionTitle}>{item.name}</Text>
-            <Text>{item.address}</Text>
-            <Text>{item.mission}</Text>
+            <Text style={styles.missionTitle}>{item.title}</Text>
+            <Text>{item.description}</Text>
             <Text style={styles.reward}>🎁 {item.reward}</Text>
           </View>
         )}
@@ -58,21 +85,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0078fe',
   },
-  missionInfo: {
-    fontSize: 14,
-    color: '#004d40',
-    marginBottom: 10,
-  },
-  acceptButton: {
-    backgroundColor: '#00796b',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    alignSelf: 'flex-end',
-  },
-  acceptButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#888',
   },
 });
