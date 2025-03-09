@@ -2,25 +2,35 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtDecode } from 'jwt-decode';
 
 const TaskCard = ({ task }) => {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{task.title}</Text>
       <Text style={styles.description}>{task.description}</Text>
-      <Text style={styles.status}>สถานะ: {task.status}</Text> {/* Show status */}
+      <Text style={styles.status}>สถานะ: {String(task.status)}</Text> 
     </View>
   );
 };
 
 export default function CompletedTasksScreen({ navigation }) {
   const [completedTasks, setCompletedTasks] = useState([]);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const fetchCompletedTasks = async () => {
       try {
-        const storedCompletedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
-        setCompletedTasks(storedCompletedTasks);
+        const storedToken = await AsyncStorage.getItem('userToken');
+        if (storedToken) {
+          const decodedToken = jwtDecode(storedToken);
+          const user_id = decodedToken?.user_id || decodedToken?.id;
+          setUserId(user_id);
+
+          const storedCompletedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
+          const userTasks = storedCompletedTasks.filter(task => task.createdBy === user_id);
+          setCompletedTasks(userTasks);
+        }
       } catch (error) {
         console.error('Error fetching completed tasks:', error);
         Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจที่เสร็จสิ้นได้');
