@@ -83,6 +83,21 @@ export default function PostScreen({ navigation }) {
       const data = await response.json();
       console.log('Task Created:', data);
       Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
+      
+      // Clear input fields
+      setName('');
+      setAddress('');
+      setMission('');
+      setReward('');
+      setSelectedLocation(null);
+      setRegion({
+        latitude: 13.7563,
+        longitude: 100.5018,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+
+      navigation.navigate('ListScreen'); // Navigate to ListScreen
     } catch (error) {
       console.error('Error posting task:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
