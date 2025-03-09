@@ -23,30 +23,9 @@ export default function CustomHeader({
   };
 
   const handleUserIconPress = () => {
-    Alert.alert(
-      'โปรไฟล์',
-      'คุณต้องการทำอะไร?',
-      [
-        {
-          text: 'แก้ไขโปรไฟล์',
-          onPress: () => {
-            navigation.navigate('ProfindScreen');
-          },
-        },
-        {
-          text: 'ล็อกเอาท์',
-          onPress: () => {
-            navigation.replace('Login');
-          },
-        },
-        {
-          text: 'ยกเลิก',
-          style: 'cancel',
-        },
-      ],
-      { cancelable: true }
-    );
+    navigation.navigate('ProfileScreen');
   };
+  
 
   return (
     <View style={styles.header}>
