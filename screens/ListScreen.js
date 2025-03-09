@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 const TaskCard = ({ task, onComplete, onDelete }) => {
   return (
@@ -63,7 +63,9 @@ export default function ListScreen({ navigation }) {
   };
 
   useEffect(() => {
-    fetchTasks();
+    if (token && userId) {
+      fetchTasks();
+    }
   }, [token, userId]);
 
   const handleComplete = async (task) => {
