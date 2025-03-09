@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jwtDecode } from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 
 const TaskCard = ({ task, onComplete, onDelete }) => {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{task.title}</Text>
       <Text style={styles.description}>{task.description}</Text>
+      <Text style={styles.status}>สถานะ: {task.status}</Text> {/* Add status display */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={[styles.button, styles.completeButton]} onPress={onComplete}>
           <Text style={styles.buttonText}>เสร็จ</Text>
@@ -51,7 +52,10 @@ export default function ListScreen({ navigation }) {
       });
 
       const data = await response.json();
-      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+      const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
+      const completedTaskIds = completedTasks.map(task => task._id);
+      const filteredTasks = data.tasks.filter(task => !completedTaskIds.includes(task._id));
+      setTasks(Array.isArray(filteredTasks) ? filteredTasks : []);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
@@ -78,10 +82,11 @@ export default function ListScreen({ navigation }) {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`,
                 },
+                body: JSON.stringify({ status: 'Completed' }), // Update status to 'Completed'
               });
               
               const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
-              await AsyncStorage.setItem('completedTasks', JSON.stringify([...completedTasks, task]));
+              await AsyncStorage.setItem('completedTasks', JSON.stringify([...completedTasks, { ...task, status: 'Completed' }]));
               
               setTasks((prevTasks) => prevTasks.filter((t) => t._id !== task._id));
             } catch (error) {
@@ -219,6 +224,11 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: '#666',
+    marginBottom: 16,
+  },
+  status: {
+    fontSize: 14,
+    color: '#888',
     marginBottom: 16,
   },
   buttonContainer: {
