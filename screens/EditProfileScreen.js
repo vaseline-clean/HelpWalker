@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jwtDecode } from 'jwt-decode';
+import jwtDecode from 'jwt-decode';  // ใช้ jwt-decode ในการถอดรหัส token
+import Icon from 'react-native-vector-icons/Ionicons';  // นำเข้าไอคอนจาก react-native-vector-icons
 
 export default function EditProfileScreen({ navigation }) {
   const [userData, setUserData] = useState({
@@ -11,6 +12,7 @@ export default function EditProfileScreen({ navigation }) {
   });
   const [token, setToken] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(true);  // สถานะการโหลดข้อมูล
 
   useEffect(() => {
     const getToken = async () => {
@@ -37,19 +39,34 @@ export default function EditProfileScreen({ navigation }) {
           },
         });
 
-        const data = await response.json();
-        setUserData({
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-        });
+        if (response.ok) {
+          const data = await response.json();
+          // ตรวจสอบว่า data มีค่าหรือไม่ก่อน
+          if (data && data.name && data.email && data.phone) {
+            setUserData({
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+            });
+          } else {
+            Alert.alert('ข้อผิดพลาด', 'ข้อมูลผู้ใช้ไม่ถูกต้อง');
+          }
+        } else {
+          Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้ได้');
+        }
       } catch (error) {
         console.error('Error fetching user data:', error);
         Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้ได้');
+      } finally {
+        setLoading(false);  // การโหลดเสร็จสิ้น
       }
     };
 
-    fetchUserData();
+    if (token && userId) {
+      fetchUserData();
+    } else {
+      setLoading(false);
+    }
   }, [token, userId]);
 
   const handleSave = async () => {
@@ -75,8 +92,23 @@ export default function EditProfileScreen({ navigation }) {
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
+      {/* Header แบบมีไอคอนย้อนกลับ */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-back" size={30} color="#000" />
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.label}>ชื่อ:</Text>
       <TextInput
         style={styles.input}
@@ -98,7 +130,10 @@ export default function EditProfileScreen({ navigation }) {
         onChangeText={(text) => setUserData({ ...userData, phone: text })}
       />
 
-      <Button title="บันทึก" onPress={handleSave} />
+      {/* ปรับปุ่มบันทึกให้มีสไตล์ */}
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+        <Text style={styles.saveButtonText}>บันทึก</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -108,6 +143,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 20,
+    marginTop: 20,  // ขยับลงมาจากด้านบน
+  },
+  backButton: {
+    marginTop: 1,
+    marginLeft: 1,
   },
   label: {
     fontSize: 16,
@@ -122,5 +167,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     padding: 10,
     borderRadius: 8,
+  },
+  saveButton: {
+    backgroundColor: '#4CAF50',  // สีพื้นหลังของปุ่ม
+    paddingVertical: 12,  // การตั้งค่าระยะห่างด้านบน-ล่าง
+    paddingHorizontal: 20,  // การตั้งค่าระยะห่างด้านข้าง
+    borderRadius: 8,  // มุมโค้ง
+    marginTop: 20,  // ช่องว่างด้านบน
+    alignItems: 'center',  // จัดตำแหน่งข้อความในปุ่มให้อยู่ตรงกลาง
+  },
+  saveButtonText: {
+    fontSize: 16,
+    color: '#fff',  // สีของข้อความในปุ่ม
+    fontWeight: 'bold',
   },
 });
