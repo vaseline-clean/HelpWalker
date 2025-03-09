@@ -9,7 +9,7 @@ const TaskCard = ({ task, onComplete, onDelete }) => {
     <View style={styles.card}>
       <Text style={styles.title}>{task.title}</Text>
       <Text style={styles.description}>{task.description}</Text>
-      <Text style={styles.status}>สถานะ: {String(task.status)}</Text> 
+      <Text style={styles.status}>สถานะ: {String(task.status)}</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={[styles.button, styles.completeButton]} onPress={onComplete}>
           <Text style={styles.buttonText}>เสร็จ</Text>
@@ -84,7 +84,7 @@ export default function ListScreen({ navigation }) {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ status: 'Completed' }), // Update status to 'Completed'
+                body: JSON.stringify({ status: 'Completed' }),
               });
               
               const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
@@ -132,8 +132,12 @@ export default function ListScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <CustomHeader navigation={navigation} title="รายการ" />
-
+      <CustomHeader 
+        navigation={navigation} 
+        title="รายการ" 
+        style={{ paddingTop: 30, paddingHorizontal: 20 }} // เพิ่ม padding
+      />
+      
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.refreshButton} onPress={fetchTasks}>
           <Text style={styles.refreshText}>รีเฟรช</Text>
@@ -166,7 +170,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f4f4f4',
-    padding: 16,
+    padding: 1,
   },
   scrollView: {
     paddingBottom: 16,
@@ -185,7 +189,9 @@ const styles = StyleSheet.create({
   refreshButton: {
     flex: 1,
     backgroundColor: '#FFA500',
+    marginTop: 10,
     padding: 10,
+    marginBottom: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
@@ -196,7 +202,9 @@ const styles = StyleSheet.create({
   historyButton: {
     flex: 1,
     backgroundColor: '#28a745',
+    marginTop: 10,  
     padding: 10,
+    marginBottom: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
