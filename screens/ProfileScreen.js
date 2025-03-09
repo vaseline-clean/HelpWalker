@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jwtDecode } from 'jwt-decode';
-import Icon from 'react-native-vector-icons/Ionicons';  // นำเข้าไอคอนจาก react-native-vector-icons
+import jwtDecode from 'jwt-decode';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function ProfileScreen({ navigation }) {
   const [userData, setUserData] = useState({
@@ -19,13 +19,9 @@ export default function ProfileScreen({ navigation }) {
     const getToken = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('userToken');
-        console.log("Retrieved Token:", storedToken);
-
         if (storedToken) {
           setToken(storedToken);
           const decodedToken = jwtDecode(storedToken);
-          console.log("Decoded Token:", decodedToken);
-
           if (decodedToken.user_id) {
             setUserId(decodedToken.user_id);
           } else {
@@ -42,34 +38,31 @@ export default function ProfileScreen({ navigation }) {
     getToken();
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (token && userId) {
-        fetchUserData();
-      }
-    }, [token, userId])
-  );
+  useEffect(() => {
+    if (token && userId) {
+      fetchUserData();
+    }
+  }, [token, userId]);
 
   const fetchUserData = async () => {
-    if (!token || !userId) return;
+    try {
+      if (!token || !userId) return;
 
-        const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+      const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       const data = await response.json();
-      console.log("Fetched User Data:", data);
-
-      if (data && data.user_name && data.user_email && data.user_phone) {
+      if (data && data.name && data.email && data.phone) {
         setUserData({
-          name: data.user_name, 
-          email: data.user_email, 
-          phone: data.user_phone,
-          address: data.user_address
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          address: data.address
         });
       } else {
         Alert.alert('ข้อผิดพลาด', 'ไม่พบข้อมูลผู้ใช้');
