@@ -79,7 +79,7 @@ export default function SignupScreen({ navigation }) {
       />
       <TextInput
         style={styles.input}
-        placeholder="รหัสผ่าน"
+        placeholder="รหัสผ่าน (มากกว่า 6 ตัวอักษร)"
         value={formData.user_password}
         secureTextEntry
         onChangeText={(text) => handleInputChange('user_password', text)}
