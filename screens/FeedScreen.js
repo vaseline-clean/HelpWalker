@@ -58,6 +58,14 @@ export default function FeedScreen({ route, navigation }) {
             <Text style={styles.missionTitle}>{item.title}</Text>
             <Text>{item.description}</Text>
             <Text style={styles.reward}>🎁 {item.reward}</Text>
+
+            {/* ปุ่มดูรายละเอียด */}
+            <TouchableOpacity
+              style={styles.detailButton}
+              onPress={() => navigation.navigate('MissionDetail', { missionId: item._id })}
+            >
+              <Text style={styles.buttonText}>ดูรายละเอียด</Text>
+            </TouchableOpacity>
           </View>
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>ยังไม่มีภารกิจ</Text>}
@@ -105,6 +113,18 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontWeight: 'bold',
     color: '#0078fe',
+  },
+  detailButton: {
+    backgroundColor: '#0078fe',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   emptyText: {
     textAlign: 'center',
