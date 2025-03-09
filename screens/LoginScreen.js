@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';  // Import AsyncStorage
+import { jwtDecode } from 'jwt-decode';  // Import jwt-decode
 
 export default function LoginScreen({ navigation }) {
   const [user_email, setEmail] = useState('');
@@ -8,49 +9,55 @@ export default function LoginScreen({ navigation }) {
 
   // Handle the login process
   const handleLogin = async () => {
-  if (user_email === '' || user_password === '') {
-    alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
-    return;
-  }
+    if (user_email === '' || user_password === '') {
+      alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน');
+      return;
+    }
 
-  try {
-    const response = await fetch('http://10.30.136.56:3001/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ user_email, user_password }),
-    });
+    // Check if the email is a Gmail address
+    if (!user_email.endsWith('@gmail.com')) {
+      alert('กรุณาใช้อีเมลให้ถูกต้อง');
+      return;
+    }
 
-    let data;
     try {
-      data = await response.clone().json();
+      const response = await fetch('http://10.30.136.56:3001/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_email, user_password }),
+      });
+
+      let data;
+      try {
+        data = await response.clone().json();
+      } catch (error) {
+        const responseText = await response.text();
+        console.error('Response text:', responseText);
+        data = { message: responseText };
+      }
+
+      if (response.ok) {
+        // Store token in AsyncStorage
+        await AsyncStorage.setItem('userToken', data.token);  // Assuming the token is in the response
+
+        // Decode the token to extract user information
+        const decodedToken = jwtDecode(data.token);
+        console.log('Decoded Token:', decodedToken);
+
+        // Show a success alert with token
+        Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบแล้ว!', [
+          { text: 'ตกลง', onPress: () => navigation.replace('MainTabs') },
+        ]);
+      } else {
+        alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
+      }
     } catch (error) {
-      const responseText = await response.text();
-      console.error('Response text:', responseText);
-      data = { message: responseText };
+      alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+      console.error(error);
     }
-
-    if (response.ok) {
-      // Store token in AsyncStorage
-      await AsyncStorage.setItem('userToken', data.token);  // Assuming the token is in the response
-
-      // Log the token to console
-      console.log('Token:', data.token);
-
-      // Show a success alert with token
-      Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบแล้ว!', [
-        { text: 'ตกลง', onPress: () => navigation.replace('MainTabs') },
-      ]);
-    } else {
-      alert(data.message || 'เกิดข้อผิดพลาดในการล็อกอิน');
-    }
-  } catch (error) {
-    alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
-    console.error(error);
-  }
-};
-
+  };
 
   return (
     <View style={styles.container}>
