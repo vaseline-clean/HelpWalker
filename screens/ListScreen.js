@@ -9,6 +9,7 @@ const TaskCard = ({ task, onComplete, onDelete }) => {
     <View style={styles.card}>
       <Text style={styles.title}>{task.title}</Text>
       <Text style={styles.description}>{task.description}</Text>
+      <Text style={styles.status}>สถานะ: {String(task.status)}</Text> 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={[styles.button, styles.completeButton]} onPress={onComplete}>
           <Text style={styles.buttonText}>เสร็จ</Text>
@@ -51,7 +52,10 @@ export default function ListScreen({ navigation }) {
       });
 
       const data = await response.json();
-      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+      const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
+      const completedTaskIds = completedTasks.map(task => task._id);
+      const filteredTasks = data.tasks.filter(task => !completedTaskIds.includes(task._id));
+      setTasks(Array.isArray(filteredTasks) ? filteredTasks : []);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
@@ -59,7 +63,9 @@ export default function ListScreen({ navigation }) {
   };
 
   useEffect(() => {
-    fetchTasks();
+    if (token && userId) {
+      fetchTasks();
+    }
   }, [token, userId]);
 
   const handleComplete = async (task) => {
@@ -78,10 +84,11 @@ export default function ListScreen({ navigation }) {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`,
                 },
+                body: JSON.stringify({ status: 'Completed' }), // Update status to 'Completed'
               });
               
               const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
-              await AsyncStorage.setItem('completedTasks', JSON.stringify([...completedTasks, task]));
+              await AsyncStorage.setItem('completedTasks', JSON.stringify([...completedTasks, { ...task, status: 'Completed' }]));
               
               setTasks((prevTasks) => prevTasks.filter((t) => t._id !== task._id));
             } catch (error) {
@@ -127,13 +134,15 @@ export default function ListScreen({ navigation }) {
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="รายการ" />
 
-      <TouchableOpacity style={styles.refreshButton} onPress={fetchTasks}>
-        <Text style={styles.refreshText}>รีเฟรช</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.historyButton} onPress={() => navigation.navigate('CompletedTasksScreen')}>
-        <Text style={styles.historyText}>ประวัติภารกิจสำเร็จ</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.refreshButton} onPress={fetchTasks}>
+          <Text style={styles.refreshText}>รีเฟรช</Text>
+        </TouchableOpacity>
+        <View style={styles.divider} />
+        <TouchableOpacity style={styles.historyButton} onPress={() => navigation.navigate('CompletedTasksScreen')}>
+          <Text style={styles.historyText}>ประวัติภารกิจสำเร็จ</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView contentContainerStyle={styles.scrollView}>
         {tasks.length > 0 ? (
@@ -168,11 +177,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   refreshButton: {
+    flex: 1,
     backgroundColor: '#FFA500',
     padding: 10,
     borderRadius: 8,
-    marginBottom: 10,
     alignItems: 'center',
   },
   refreshText: {
@@ -180,10 +194,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   historyButton: {
+    flex: 1,
     backgroundColor: '#28a745',
     padding: 10,
-    marginHorizontal: 20,
-    marginVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
@@ -191,6 +204,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  divider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: '#ccc',
+    marginHorizontal: 10,
   },
   card: {
     backgroundColor: '#fff',
@@ -207,6 +226,11 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: '#666',
+    marginBottom: 16,
+  },
+  status: {
+    fontSize: 14,
+    color: '#888',
     marginBottom: 16,
   },
   buttonContainer: {

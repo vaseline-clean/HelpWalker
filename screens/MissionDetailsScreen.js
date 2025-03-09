@@ -1,8 +1,41 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import axios from 'axios';
 
 export default function MissionDetailsScreen({ route, navigation }) {
-  const { missionTitle, missionDetails, creatorName, creatorPhone, address } = route.params;
+  const { taskId } = route.params;
+  const [task, setTask] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get(`https://your-api-endpoint.com/tasks/${taskId}`)
+      .then(response => {
+        setTask(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error(error);
+        setLoading(false);
+      });
+  }, [taskId]);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (!task) {
+    return (
+      <View style={styles.container}>
+        <Text>Task not found</Text>
+      </View>
+    );
+  }
+
+  const { missionTitle, missionDetails, creatorName, creatorPhone, address } = task;
 
   return (
     <View style={styles.container}>

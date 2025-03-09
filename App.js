@@ -9,9 +9,8 @@ import MissionDetailsScreen from './screens/MissionDetailsScreen'; // Import ห
 import FeedScreen from './screens/FeedScreen'; // Import FeedScreen
 import ChatScreen from './screens/ChatScreen';
 import ListScreen from './screens/ListScreen';
-import ProfindScreen from './screens/ProfindScreen';
+import ProfileScreen from './screens/ProfileScreen'; // Ensure this file exists
 import CompletedTasksScreen from './screens/CompletedTasksScreen';
-
 
 const Stack = createStackNavigator();
 
@@ -42,8 +41,8 @@ export default function App() {
           options={{ headerShown: false }}/>
 
         <Stack.Screen 
-          name="ProfindScreen" 
-          component={ProfindScreen} 
+          name="ProfileScreen" 
+          component={ProfileScreen} 
           options={{ headerShown: false }}/>
 
         {/* หน้าฟีด (FeedScreen) */}
@@ -72,9 +71,6 @@ export default function App() {
           name="CompletedTasksScreen" 
           component={CompletedTasksScreen} 
           options={{ headerShown: false }} />
-
-
-
       </Stack.Navigator>
     </NavigationContainer>
   );
