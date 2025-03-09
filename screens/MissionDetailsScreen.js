@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function MissionDetailsScreen({ route, navigation }) {
   const { mission } = route.params;
@@ -40,6 +41,11 @@ export default function MissionDetailsScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* ปุ่มย้อนกลับ */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={30} color="#fff" />
+      </TouchableOpacity>
+
       {/* ข้อมูลผู้สร้างภารกิจ */}
       <View style={styles.card}>
         <Text style={styles.userName}>{creatorName}</Text>
@@ -80,16 +86,25 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 50,
+    zIndex: 1,
+  },
   card: {
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
-    padding: 15,
+    padding: 20,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 5,
   },
   userName: {
     fontSize: 18,
@@ -102,7 +117,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   missionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#333',
@@ -136,6 +151,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 'auto',
+    marginBottom: 20,
   },
   acceptButtonText: {
     fontSize: 18,
