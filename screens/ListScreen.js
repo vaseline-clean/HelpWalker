@@ -142,12 +142,15 @@ export default function ListScreen({ navigation }) {
       <CustomHeader
         navigation={navigation}
         title="รายการ"
-        style={{ paddingTop: 30, paddingHorizontal: 20 }} // เพิ่ม padding
+        style={styles.header} // ใช้สไตล์ที่มีตำแหน่ง absolute
       />
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.historyButton} onPress={() => navigation.navigate('CompletedTasksScreen')}>
           <Text style={styles.historyText}>ประวัติภารกิจสำเร็จ</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.acceptButton} onPress={() => navigation.navigate('AcceptTaskScreen')}>
+          <Text style={styles.buttonText}>รับภารกิจ</Text>
         </TouchableOpacity>
       </View>
 
@@ -178,8 +181,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4f4f4',
     padding: 1,
   },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 30,
+    paddingHorizontal: 20,
+  },
   scrollView: {
     paddingBottom: 16,
+    paddingTop: 10, // ลดระยะห่างจากส่วนปุ่ม
   },
   noTaskText: {
     fontSize: 14,
@@ -190,20 +202,34 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10, // ลดระยะห่างระหว่างปุ่มกับรายการภารกิจ
   },
   historyButton: {
     flex: 1,
     backgroundColor: '#28a745',
-    marginTop: 10,  
+    marginTop: 10,
     padding: 10,
     marginBottom: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
+  acceptButton: {
+    flex: 1,
+    backgroundColor: '#007bff',
+    marginTop: 10,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginLeft: 5, // ลดระยะห่างระหว่างปุ่ม
+  },
   historyText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  buttonText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
   card: {
