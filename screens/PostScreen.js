@@ -97,7 +97,6 @@ export default function PostScreen({ navigation }) {
         longitudeDelta: 0.01,
       });
 
-      navigation.navigate('ListScreen'); // Navigate to ListScreen
     } catch (error) {
       console.error('Error posting task:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
