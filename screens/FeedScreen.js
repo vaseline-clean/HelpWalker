@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-
 import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-export default function FeedScreen({ navigation }) {
-  const [missions, setMissions] = useState([]);
-  const [loading, setLoading] = useState(false); // เพิ่ม state โหลดข้อมูล
 
+export default function FeedScreen({ route, navigation }) {
+  const [missions, setMissions] = useState([]);
 
   useEffect(() => {
     const fetchAllTasks = async () => {
@@ -36,83 +34,24 @@ export default function FeedScreen({ navigation }) {
   }, []);
 
   // ใช้ useEffect เพื่อตรวจจับ newMission ที่ถูกส่งมาจาก PostScreen
-
-
   useEffect(() => {
-    fetchMissions();
-  }, []);
-
-  const getToken = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (token) {
-        return token;
-      } else {
-        throw new Error('No token found');
-      }
-    } catch (error) {
-      console.error('Error getting token:', error);
-      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลโทเค็นได้');
+    if (route.params?.newMission) {
+      setMissions((prevMissions) => [route.params.newMission, ...prevMissions]);
     }
-  };
+  }, [route.params?.newMission]);
 
-  const fetchMissions = async () => {
-    setLoading(true);
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const decodedToken = jwtDecode(token);
-      console.log('Decoded Token:', decodedToken);
-
-      const response = await fetch('http://10.30.136.56:3001/tasks/all-tasks', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const responseText = await response.text();
-      console.log('Response Status:', response.status);
-      console.log('Response Text:', responseText);
-
-      if (response.status === 200) {
-        try {
-          const data = JSON.parse(responseText);
-          console.log('Parsed Data:', data);
-          if (Array.isArray(data) && data.length > 0) {
-            setMissions(data);
-            console.log('Missions set:', data);
-          } else {
-            setMissions([]);
-            console.log('No missions found');
-          }
-        } catch (parseError) {
-          console.error('JSON Parse Error:', parseError);
-          Alert.alert('ข้อผิดพลาด', 'ข้อมูลจากเซิร์ฟเวอร์ไม่ถูกต้อง');
-        }
-      } else {
-        console.error('Error fetching missions:', responseText);
-        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
-      }
-    } catch (error) {
-      console.error('Error fetching missions:', error);
-      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
-    } finally {
-      setLoading(false);
-    }
+  const handlePress = (mission) => {
+    navigation.navigate('MissionDetailsScreen', { mission });
   };
 
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="ฟีด" />
-
       <FlatList
         data={missions}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <View style={styles.missionItem}>
+          <View style={styles.missionItem} onTouchEnd={() => handlePress(item)}>
             <Text style={styles.missionTitle}>{item.title}</Text>
             <Text>{item.description}</Text>
             <Text style={styles.reward}>🎁 {item.reward}</Text>
@@ -120,7 +59,6 @@ export default function FeedScreen({ navigation }) {
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>ยังไม่มีภารกิจ</Text>}
       />
-
     </View>
   );
 }
@@ -152,13 +90,9 @@ const styles = StyleSheet.create({
     color: '#0078fe',
   },
   emptyText: {
-
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
     color: '#888',
-
-
   },
 });
-

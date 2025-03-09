@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';  // Import AsyncStorage
+import { jwtDecode } from 'jwt-decode';  // Import jwt-decode
 
 export default function LoginScreen({ navigation }) {
   const [user_email, setEmail] = useState('');
@@ -41,8 +42,9 @@ export default function LoginScreen({ navigation }) {
         // Store token in AsyncStorage
         await AsyncStorage.setItem('userToken', data.token);  // Assuming the token is in the response
 
-        // Log the token to console
-        console.log('Token:', data.token);
+        // Decode the token to extract user information
+        const decodedToken = jwtDecode(data.token);
+        console.log('Decoded Token:', decodedToken);
 
         // Show a success alert with token
         Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบแล้ว!', [
