@@ -44,6 +44,8 @@ export default function FeedScreen({ route, navigation }) {
     navigation.navigate('MissionDetailsScreen', { mission });
   };
 
+
+
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="ฟีด" />
@@ -67,7 +69,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 10,
+    padding: 1,
   },
   missionItem: {
     padding: 15,
@@ -95,4 +97,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
   },
+
 });
+

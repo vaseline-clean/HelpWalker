@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
+import Icon from 'react-native-vector-icons/Ionicons';  // นำเข้าไอคอนจาก react-native-vector-icons
 
 export default function ProfileScreen({ navigation }) {
   const [userData, setUserData] = useState({
@@ -29,7 +30,7 @@ export default function ProfileScreen({ navigation }) {
       try {
         if (!token || !userId) return;
 
-        const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
+        const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -52,54 +53,46 @@ export default function ProfileScreen({ navigation }) {
     fetchUserData();
   }, [token, userId]);
 
-  const handleSave = async () => {
-    try {
-      const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(userData),
-      });
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('userToken');
+    navigation.navigate('LoginScreen');
+  };
 
-      const data = await response.json();
-      Alert.alert('สำเร็จ', 'ข้อมูลผู้ใช้ถูกอัปเดตเรียบร้อยแล้ว!');
-    } catch (error) {
-      console.error('Error updating user data:', error);
-      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลผู้ใช้ได้');
-    }
+  const handleEditProfile = () => {
+    navigation.navigate('EditProfileScreen');
+  };
+
+  const handleBack = () => {
+    navigation.goBack(); // กลับไปหน้าก่อนหน้า
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>ชื่อ</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.name}
-        onChangeText={(text) => setUserData({ ...userData, name: text })}
-        placeholder="กรอกชื่อ"
-      />
-
-      <Text style={styles.label}>อีเมล</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.email}
-        onChangeText={(text) => setUserData({ ...userData, email: text })}
-        placeholder="กรอกอีเมล"
-      />
-
-      <Text style={styles.label}>เบอร์โทร</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.phone}
-        onChangeText={(text) => setUserData({ ...userData, phone: text })}
-        placeholder="กรอกเบอร์โทร"
-      />
-
-      <TouchableOpacity style={styles.button} onPress={handleSave}>
-        <Text style={styles.buttonText}>บันทึก</Text>
+      {/* ปุ่มย้อนกลับเป็นไอคอน */}
+      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <Icon name="arrow-back" size={30} color="#000" /> {/* ใช้ไอคอนย้อนกลับ */}
       </TouchableOpacity>
+
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        <Text style={styles.label}>ชื่อ:</Text>
+        <Text style={styles.info}>{userData.name}</Text>
+
+        <Text style={styles.label}>อีเมล:</Text>
+        <Text style={styles.info}>{userData.email}</Text>
+
+        <Text style={styles.label}>เบอร์โทร:</Text>
+        <Text style={styles.info}>{userData.phone}</Text>
+
+        {/* ปรับแต่งปุ่มแก้ไขโปรไฟล์ */}
+        <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+          <Text style={styles.editButtonText}>แก้ไขโปรไฟล์</Text>
+        </TouchableOpacity>
+
+        {/* ปรับแต่งปุ่มออกจากระบบ */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>ออกจากระบบ</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 }
@@ -108,32 +101,59 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 20,
+    paddingTop: 60, // เพิ่มระยะห่างด้านบนให้ไอคอนย้อนกลับและคอนเทนต์ลงมาอีก
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,   // ปรับตำแหน่งจากด้านบนเพื่อให้ห่างจากขอบมากขึ้น
+    left: 10,  // ตำแหน่งจากด้านซ้าย
+    zIndex: 1, // ให้ไอคอนปรากฏขึ้นบนสุด
+  },
+  contentContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginTop: 30,  // เพิ่มระยะห่างด้านบนจากชื่อ
     color: '#333',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
-    backgroundColor: '#f9f9f9',
-  },
-  button: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#fff',
+  info: {
     fontSize: 16,
+    marginBottom: 5,  // เพิ่มระยะห่างระหว่างข้อมูล
+    color: '#555',
+    backgroundColor: '#f9f9f9',
+    padding: 10,
+    borderRadius: 8,
+  },
+  // สไตล์สำหรับปุ่มแก้ไขโปรไฟล์
+  editButton: {
+    backgroundColor: '#4CAF50',  // สีพื้นหลังของปุ่ม
+    paddingVertical: 12,  // การตั้งค่าระยะห่างด้านบน-ล่าง
+    paddingHorizontal: 20,  // การตั้งค่าระยะห่างด้านข้าง
+    borderRadius: 8,  // มุมโค้ง
+    marginTop: 40,  // ช่องว่างด้านบน
+    marginBottom: 20,  // ช่องว่างระหว่างปุ่ม
+    alignItems: 'center',  // จัดตำแหน่งข้อความในปุ่มให้อยู่ตรงกลาง
+  },
+  editButtonText: {
+    fontSize: 16,
+    color: '#fff',  // สีของข้อความในปุ่ม
+    fontWeight: 'bold',
+  },
+  // สไตล์สำหรับปุ่มออกจากระบบ
+  logoutButton: {
+    backgroundColor: '#f44336',  // สีพื้นหลังของปุ่มออกจากระบบ
+    paddingVertical: 12,  // การตั้งค่าระยะห่างด้านบน-ล่าง
+    paddingHorizontal: 20,  // การตั้งค่าระยะห่างด้านข้าง
+    borderRadius: 8,  // มุมโค้ง
+    alignItems: 'center',  // จัดตำแหน่งข้อความในปุ่มให้อยู่ตรงกลาง
+  },
+  logoutButtonText: {
+    fontSize: 16,
+    color: '#fff',  // สีของข้อความในปุ่ม
     fontWeight: 'bold',
   },
 });
