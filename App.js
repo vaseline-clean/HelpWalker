@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './screens/LoginScreen';
 import AnotherLoginScreen from './screens/AnotherLoginScreen';
-import MainTabs from './navigations/MainTabs'; 
+import MainTabs from './navigation/MainTabs'; 
 import SindupScreen from './screens/SindupScreen';
 import MissionDetailsScreen from './screens/MissionDetailsScreen'; // Import หน้ารายละเอียดภารกิจ
 import FeedScreen from './screens/FeedScreen'; // Import FeedScreen

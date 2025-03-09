@@ -40,6 +40,12 @@ export default function FeedScreen({ route, navigation }) {
     }
   }, [route.params?.newMission]);
 
+  const handlePress = (mission) => {
+    navigation.navigate('MissionDetailsScreen', { mission });
+  };
+
+
+
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="ฟีด" />
@@ -47,7 +53,7 @@ export default function FeedScreen({ route, navigation }) {
         data={missions}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <View style={styles.missionItem}>
+          <View style={styles.missionItem} onTouchEnd={() => handlePress(item)}>
             <Text style={styles.missionTitle}>{item.title}</Text>
             <Text>{item.description}</Text>
             <Text style={styles.reward}>🎁 {item.reward}</Text>
@@ -91,4 +97,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
   },
+
 });
+
