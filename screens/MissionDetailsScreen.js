@@ -7,15 +7,17 @@ export default function MissionDetailsScreen({ route, navigation }) {
   const { _id: taskId, title: missionTitle, description: missionDetails } = mission;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Add error state
 
   useEffect(() => {
-    axios.get(`http://10.30.136.56:3001/tasks/${taskId}`)
+    axios.get(`http://10.30.136.56:3001/tasks/${taskId}?populate=createdBy`) // Include createdBy reference
       .then(response => {
         setTask(response.data);
         setLoading(false);
       })
       .catch(error => {
         console.error(error);
+        setError('Failed to load task details'); // Set error message
         setLoading(false);
       });
   }, [taskId]);
@@ -28,6 +30,14 @@ export default function MissionDetailsScreen({ route, navigation }) {
     );
   }
 
+  if (error) { // Display error message
+    return (
+      <View style={styles.container}>
+        <Text>{error}</Text>
+      </View>
+    );
+  }
+
   if (!task) {
     return (
       <View style={styles.loadingContainer}>
@@ -36,7 +46,9 @@ export default function MissionDetailsScreen({ route, navigation }) {
     );
   }
 
+
   const { creatorName, creatorPhone, address, reward } = task;
+
 
   return (
     <View style={styles.container}>
@@ -81,10 +93,13 @@ export default function MissionDetailsScreen({ route, navigation }) {
       {/* ปุ่มรับภารกิจ */}
       <TouchableOpacity
         style={styles.acceptButton}
-        onPress={() => navigation.navigate('ChatScreen', { 
-          creatorName, 
-          creatorPhone, 
-          missionTitle 
+        onPress={() => navigation.navigate('ChatListScreen', { 
+          user: {
+            id: task.createdBy._id,
+            name: creatorName,
+            phone: creatorPhone,
+            avatar: 'https://example.com/avatar.png' // Add avatar if available
+          }
         })}
       >
         <Text style={styles.acceptButtonText}>✅ รับภารกิจ</Text>
