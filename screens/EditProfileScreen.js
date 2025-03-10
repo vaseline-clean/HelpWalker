@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import jwtDecode from 'jwt-decode'; // Fix import statement
+
+import { jwtDecode } from 'jwt-decode';
+
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function EditProfileScreen({ navigation }) {
@@ -33,7 +35,9 @@ export default function EditProfileScreen({ navigation }) {
         return;
       }
       try {
-        const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, { // Fix template literal
+
+        const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
+
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -58,7 +62,9 @@ export default function EditProfileScreen({ navigation }) {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, { // Fix template literal
+
+      const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
+
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
