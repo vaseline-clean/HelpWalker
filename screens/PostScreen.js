@@ -5,7 +5,7 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // นำเข้าไลบรารี
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function PostScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -24,11 +24,10 @@ export default function PostScreen({ navigation }) {
   useEffect(() => {
     const getToken = async () => {
       const storedToken = await AsyncStorage.getItem('userToken');
-      console.log("Stored Token:", storedToken); // ตรวจสอบ token
       setToken(storedToken);
     };
     getToken();
-  }, []);  
+  }, []);
 
   const getCurrentLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -41,14 +40,24 @@ export default function PostScreen({ navigation }) {
 
     setSelectedLocation({ latitude, longitude });
     setRegion({ latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 });
-    setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
+    fetchAddressFromCoordinates(latitude, longitude);
   };
 
   const handleMapPress = (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setSelectedLocation({ latitude, longitude });
     setRegion({ latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 });
-    setAddress(`Lat: ${latitude}, Lng: ${longitude}`);
+    fetchAddressFromCoordinates(latitude, longitude);
+  };
+
+  const fetchAddressFromCoordinates = async (lat, lon) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+      const data = await response.json();
+      setAddress(data.display_name || `Lat: ${lat}, Lng: ${lon}`);
+    } catch (error) {
+      console.error('Error fetching address:', error);
+    }
   };
 
   const handlePostTask = async () => {
@@ -57,11 +66,16 @@ export default function PostScreen({ navigation }) {
         Alert.alert('ข้อผิดพลาด', 'คุณต้องเข้าสู่ระบบก่อน');
         return;
       }
-      const decodedToken = jwtDecode(token); // Use jwtDecode correctly
+      const decodedToken = jwtDecode(token);
       const user_id = decodedToken?.user_id || decodedToken?.id;
 
       if (!user_id) {
         Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้จาก Token ได้');
+        return;
+      }
+
+      if (!selectedLocation) {
+        Alert.alert('ข้อผิดพลาด', 'กรุณาเลือกตำแหน่งบนแผนที่');
         return;
       }
 
@@ -77,51 +91,28 @@ export default function PostScreen({ navigation }) {
           createdBy: user_id,
           reward: reward,
           address: address,
+          latitude: selectedLocation.latitude, // ส่งค่า latitude
+          longitude: selectedLocation.longitude // ส่งค่า longitude
         }),
       });
 
       const data = await response.json();
-      console.log('Task Created:', data);
       Alert.alert('สำเร็จ', 'ภารกิจถูกสร้างเรียบร้อยแล้ว!');
-      
-      // Clear input fields
       setName('');
       setAddress('');
       setMission('');
       setReward('');
       setSelectedLocation(null);
-      setRegion({
-        latitude: 13.7563,
-        longitude: 100.5018,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
-
     } catch (error) {
       console.error('Error posting task:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างภารกิจได้');
     }
   };
 
-  const createMission = () => {
-    if (!name || !address || !mission) {
-      Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
-      return;
-    }
-    handlePostTask();
-  };
-
   return (
     <View style={{ flex: 1 }}>
-      {/* แยก CustomHeader ออกจากการเลื่อน */}
       <CustomHeader navigation={navigation} title="โพส" />
-
-      <KeyboardAwareScrollView
-        style={{ flex: 1 }}
-        resetScrollToCoords={{ x: 0, y: 0 }} // รีเซ็ตตำแหน่งเมื่อฟอร์มถูกรีเฟรช
-        contentContainerStyle={styles.formContainer}
-        enableOnAndroid={true} // เปิดใช้งานสำหรับ Android
-      >
+      <KeyboardAwareScrollView style={{ flex: 1 }} contentContainerStyle={styles.formContainer}>
         <Text style={styles.label}>ชื่อ-นามสกุล</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="กรอกชื่อ-นามสกุล" />
 
@@ -142,7 +133,7 @@ export default function PostScreen({ navigation }) {
         <Text style={styles.label}>ของตอบแทน (ไม่จำเป็นต้องเป็นเงิน)</Text>
         <TextInput style={styles.input} value={reward} onChangeText={setReward} placeholder="กรอกของตอบแทน (ถ้ามี)" />
 
-        <TouchableOpacity style={styles.button} onPress={createMission}>
+        <TouchableOpacity style={styles.button} onPress={handlePostTask}>
           <Text style={styles.buttonText}>สร้างภารกิจ</Text>
         </TouchableOpacity>
       </KeyboardAwareScrollView>
@@ -151,53 +142,12 @@ export default function PostScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  formContainer: {
-    padding: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#333',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
-    backgroundColor: '#f9f9f9',
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  button: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  locationButton: {
-    backgroundColor: '#34c759',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  map: {
-    width: '100%',
-    height: 200,
-    marginVertical: 10,
-  },
+  formContainer: { padding: 20 },
+  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 5 },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 15 },
+  textArea: { height: 80, textAlignVertical: 'top' },
+  button: { backgroundColor: '#4CAF50', paddingVertical: 15, borderRadius: 8, alignItems: 'center', marginTop: 10 },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  locationButton: { backgroundColor: '#34c759', paddingVertical: 12, borderRadius: 8, alignItems: 'center', marginBottom: 10 },
+  map: { width: '100%', height: 200, marginVertical: 10 },
 });
