@@ -74,6 +74,11 @@ export default function PostScreen({ navigation }) {
         return;
       }
 
+      if (!selectedLocation) {
+        Alert.alert('ข้อผิดพลาด', 'กรุณาเลือกตำแหน่งบนแผนที่');
+        return;
+      }
+
       const response = await fetch('http://10.30.136.56:3001/tasks/add-tasks', {
         method: 'POST',
         headers: { 
@@ -86,6 +91,8 @@ export default function PostScreen({ navigation }) {
           createdBy: user_id,
           reward: reward,
           address: address,
+          latitude: selectedLocation.latitude, // ส่งค่า latitude
+          longitude: selectedLocation.longitude // ส่งค่า longitude
         }),
       });
 

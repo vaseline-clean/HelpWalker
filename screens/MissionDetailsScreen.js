@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import axios from 'axios';
+import MapView, { Marker } from 'react-native-maps';
 
 export default function MissionDetailsScreen({ route, navigation }) {
   const { mission } = route.params;
@@ -13,9 +14,10 @@ export default function MissionDetailsScreen({ route, navigation }) {
       .then(response => {
         setTask(response.data);
         setLoading(false);
+        console.log("Task Data:", response.data); // ตรวจสอบข้อมูลจาก API
       })
       .catch(error => {
-        console.error(error);
+        console.error("Error fetching task:", error);
         setLoading(false);
       });
   }, [taskId]);
@@ -36,10 +38,12 @@ export default function MissionDetailsScreen({ route, navigation }) {
     );
   }
 
-  const { creatorName, creatorPhone, address, reward } = task;
+  const { creatorName, creatorPhone, address, reward, latitude, longitude } = task;
+
+  console.log("Extracted Coordinates:", latitude, longitude);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       {/* รายละเอียดภารกิจ */}
       {missionTitle || missionDetails ? (
         <View style={styles.card}>
@@ -78,24 +82,39 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
+      {/* แผนที่ */}
+      {latitude && longitude ? (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>🗺 ตำแหน่งภารกิจ</Text>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: latitude,
+              longitude: longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          >
+            <Marker coordinate={{ latitude, longitude }} />
+          </MapView>
+        </View>
+      ) : (
+        <Text style={styles.errorText}>❌ ไม่พบตำแหน่งพิกัด</Text>
+      )}
+
       {/* ปุ่มรับภารกิจ */}
       <TouchableOpacity
         style={styles.acceptButton}
-        onPress={() => navigation.navigate('ChatScreen', { 
-          creatorName, 
-          creatorPhone, 
-          missionTitle 
-        })}
+        onPress={() => navigation.navigate('ChatScreen', { creatorName, creatorPhone, missionTitle })}
       >
         <Text style={styles.acceptButtonText}>✅ รับภารกิจ</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 20,
     backgroundColor: '#F3F4F6',
   },
@@ -109,6 +128,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'red',
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 10,
   },
   card: {
     backgroundColor: '#fff',
@@ -167,6 +188,12 @@ const styles = StyleSheet.create({
     color: '#d97706',
     fontWeight: 'bold',
     lineHeight: 22,
+  },
+  map: {
+    width: '100%',
+    height: 300,
+    borderRadius: 10,
+    marginTop: 10,
   },
   acceptButton: {
     backgroundColor: '#4CAF50',
