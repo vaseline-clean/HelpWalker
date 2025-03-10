@@ -12,17 +12,18 @@ export default function ChatListScreen({ navigation, route }) {
   const [searchText, setSearchText] = useState('');
 
   const createNewChat = () => {
-    // Logic to create a new chat
     const newChat = {
       _id: 'new_chat_id',
       sender: {
-        name: 'New Chat',
+        _id: user.id,
+        name: user.name,
+        avatar: user.avatar,
       },
+      taskId: 'new_task_id',
       timestamp: new Date(),
-      text: 'This is a new chat message.',
+      text: '',
     };
-    setChats([newChat]);
-    setNoChats(false);
+    navigation.navigate('ChatScreen', { chat: newChat });
   };
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function ChatListScreen({ navigation, route }) {
         .then(response => {
           if (response.data.length === 0) {
             setNoChats(true);
+            Alert.alert('Notification', 'ยังไม่มีการพูดคุย');
           } else {
             setChats(response.data);
             setFilteredChats(response.data);
@@ -63,12 +65,6 @@ export default function ChatListScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="Chats" />
-      <TextInput
-        style={styles.searchBar}
-        placeholder="ค้นหาแชท..."
-        value={searchText}
-        onChangeText={handleSearch}
-      />
       {noChats ? (
         <View style={styles.noChatsContainer}>
           <Text style={styles.noChatsText}>No chats found for this user.</Text>
@@ -104,14 +100,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  searchBar: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    margin: 10,
   },
   noChatsContainer: {
     flex: 1,
