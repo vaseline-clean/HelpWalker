@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jwtDecode } from 'jwt-decode';
-import Icon from 'react-native-vector-icons/Ionicons';
+import jwtDecode from 'jwt-decode';  // ใช้ jwt-decode ในการถอดรหัส token
+import Icon from 'react-native-vector-icons/Ionicons';  // นำเข้าไอคอนจาก react-native-vector-icons
 
 export default function EditProfileScreen({ navigation }) {
-  const [userData, setUserData] = useState({ name: '', phone: '', address: '' });
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
   const [token, setToken] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);  // สถานะการโหลดข้อมูล
 
   useEffect(() => {
     const getToken = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem('userToken');
-        if (storedToken) {
-          setToken(storedToken);
-          const decodedToken = jwtDecode(storedToken);
-          setUserId(decodedToken.user_id);
-        }
-      } catch (error) {
-        console.error("Error retrieving token:", error);
+      const storedToken = await AsyncStorage.getItem('userToken');
+      setToken(storedToken);
+      if (storedToken) {
+        const decodedToken = jwtDecode(storedToken);
+        setUserId(decodedToken.user_id);
       }
     };
     getToken();
@@ -28,54 +28,63 @@ export default function EditProfileScreen({ navigation }) {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!token || !userId) {
-        setLoading(false);
-        return;
-      }
       try {
-        const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
+        if (!token || !userId) return;
+
+        const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-        const data = await response.json();
+
         if (response.ok) {
-          setUserData({ name: data.user_name, phone: data.user_phone, address: data.user_address || '' });
+          const data = await response.json();
+          // ตรวจสอบว่า data มีค่าหรือไม่ก่อน
+          if (data && data.name && data.email && data.phone) {
+            setUserData({
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+            });
+          } else {
+            Alert.alert('ข้อผิดพลาด', 'ข้อมูลผู้ใช้ไม่ถูกต้อง');
+          }
         } else {
-          Alert.alert('ข้อผิดพลาด', data.message || 'ไม่สามารถดึงข้อมูลผู้ใช้ได้');
+          Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้ได้');
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
         Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลผู้ใช้ได้');
       } finally {
-        setLoading(false);
+        setLoading(false);  // การโหลดเสร็จสิ้น
       }
     };
-    fetchUserData();
+
+    if (token && userId) {
+      fetchUserData();
+    } else {
+      setLoading(false);
+    }
   }, [token, userId]);
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
+      const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          user_name: userData.name,
-          user_phone: userData.phone,
-          user_address: userData.address,
-        }),
+        body: JSON.stringify(userData),
       });
-      const responseData = await response.json();
+
       if (response.ok) {
         Alert.alert('สำเร็จ', 'บันทึกข้อมูลสำเร็จ');
         navigation.goBack();
       } else {
-        Alert.alert('ข้อผิดพลาด', responseData.message || 'ไม่สามารถบันทึกข้อมูลได้');
+        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้');
       }
     } catch (error) {
       console.error('Error saving user data:', error);
@@ -93,6 +102,7 @@ export default function EditProfileScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Header แบบมีไอคอนย้อนกลับ */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-back" size={30} color="#000" />
@@ -106,6 +116,13 @@ export default function EditProfileScreen({ navigation }) {
         onChangeText={(text) => setUserData({ ...userData, name: text })}
       />
 
+      <Text style={styles.label}>อีเมล:</Text>
+      <TextInput
+        style={styles.input}
+        value={userData.email}
+        onChangeText={(text) => setUserData({ ...userData, email: text })}
+      />
+
       <Text style={styles.label}>เบอร์โทร:</Text>
       <TextInput
         style={styles.input}
@@ -113,13 +130,7 @@ export default function EditProfileScreen({ navigation }) {
         onChangeText={(text) => setUserData({ ...userData, phone: text })}
       />
 
-      <Text style={styles.label}>ที่อยู่:</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.address}
-        onChangeText={(text) => setUserData({ ...userData, address: text })}
-      />
-
+      {/* ปรับปุ่มบันทึกให้มีสไตล์ */}
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>บันทึก</Text>
       </TouchableOpacity>
@@ -137,7 +148,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     marginBottom: 20,
-    marginTop: 20,
+    marginTop: 20,  // ขยับลงมาจากด้านบน
   },
   backButton: {
     marginTop: 1,
@@ -158,16 +169,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginTop: 20,
-    alignItems: 'center',
+    backgroundColor: '#4CAF50',  // สีพื้นหลังของปุ่ม
+    paddingVertical: 12,  // การตั้งค่าระยะห่างด้านบน-ล่าง
+    paddingHorizontal: 20,  // การตั้งค่าระยะห่างด้านข้าง
+    borderRadius: 8,  // มุมโค้ง
+    marginTop: 20,  // ช่องว่างด้านบน
+    alignItems: 'center',  // จัดตำแหน่งข้อความในปุ่มให้อยู่ตรงกลาง
   },
   saveButtonText: {
     fontSize: 16,
-    color: '#fff',
+    color: '#fff',  // สีของข้อความในปุ่ม
     fontWeight: 'bold',
   },
 });
