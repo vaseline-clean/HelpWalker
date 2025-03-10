@@ -4,8 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FeedScreen from '../screens/FeedScreen';
 import ListScreen from '../screens/ListScreen';
 import PostScreen from '../screens/PostScreen';
-import ChatScreen from '../screens/ChatScreen';
-import MissionDetailsScreen from '../screens/MissionDetailsScreen';
+import ChatListScreen from '../screens/ChatListScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -24,9 +23,7 @@ export default function MainTabs() {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
           } else if (route.name === 'แชท') {
             iconName = focused ? 'chatbubble' : 'chatbubble-outline';
-          } else if (route.name === 'MissionDetailsScreen') {
-            iconName = focused ? 'information-circle' : 'information-circle-outline';
-          }
+          } 
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -38,8 +35,7 @@ export default function MainTabs() {
       <Tab.Screen name="หน้าหลัก" component={FeedScreen} />
       <Tab.Screen name="รายการ" component={ListScreen} />
       <Tab.Screen name="โพส" component={PostScreen} />
-      <Tab.Screen name="แชท" component={ChatScreen} />
-      <Tab.Screen name="MissionDetailsScreen" component={MissionDetailsScreen} />
+      <Tab.Screen name="แชท" component={ChatListScreen} />
     </Tab.Navigator>
   );
 }

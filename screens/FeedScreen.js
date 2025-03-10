@@ -49,10 +49,10 @@ export default function FeedScreen({ route, navigation }) {
   }, [route.params?.newMission]);
 
   const handlePress = (mission) => {
-    navigation.navigate('MissionDetailsScreen', { mission });
+    navigation.navigate('MissionDetailsScreen', { mission }); // ไปที่หน้ารายละเอียดภารกิจ
   };
 
-  // ฟังก์ชันสำหรับการรีเฟรช
+  // ฟังก์ชันสำหรับการรีเฟรช 
   const onRefresh = () => {
     setIsRefreshing(true); // กำหนดให้กำลังรีเฟรช
     fetchAllTasks(); // เรียกฟังก์ชันดึงข้อมูลใหม่

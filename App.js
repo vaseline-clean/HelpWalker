@@ -12,6 +12,7 @@ import ListScreen from './screens/ListScreen';
 import ProfileScreen from './screens/ProfileScreen'; // Ensure this file exists
 import CompletedTasksScreen from './screens/CompletedTasksScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
+import ChatListScreen from './screens/ChatListScreen';
 
 const Stack = createStackNavigator();
 
@@ -58,7 +59,7 @@ export default function App() {
 
         {/* หน้ารายละเอียดภารกิจ (MissionDetailsScreen) */}
         <Stack.Screen 
-          name="MissionDetails" 
+          name="MissionDetailsScreen" 
           component={MissionDetailsScreen} 
           options={{ title: 'รายละเอียดภารกิจ', headerShown: true }}/>
 
@@ -66,6 +67,12 @@ export default function App() {
           name="ChatScreen" 
           component={ChatScreen} 
           options={{ title: 'แชท', headerShown: true }}/>
+
+        <Stack.Screen
+          name="ChatListScreen"
+          component={ChatListScreen}
+          options={{ title: 'รายชื่อแชท', headerShown: true }}
+        />
         
         <Stack.Screen 
           name="ListScreen" 
