@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
 import axios from 'axios';
@@ -7,6 +6,7 @@ export default function ChatScreen({ route }) {
   const { chat } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [error, setError] = useState(null); // Add error state
 
   useEffect(() => {
     axios.get(`http://localhost:3001/chat/messages/${chat.taskId}`)
@@ -15,6 +15,7 @@ export default function ChatScreen({ route }) {
       })
       .catch(error => {
         console.error('Failed to fetch messages:', error);
+        setError('Failed to fetch messages'); // Set error message
       });
   }, [chat.taskId]);
 
@@ -32,14 +33,14 @@ export default function ChatScreen({ route }) {
       })
       .catch(error => {
         console.error('Failed to send message:', error);
+        setError('Failed to send message'); // Set error message
       });
     }
-
   };
 
   return (
     <View style={styles.container}>
-
+      {error && <Text style={styles.errorText}>{error}</Text>} {/* Display error message */}
       <FlatList
         data={messages}
         keyExtractor={(item) => item._id}
@@ -68,7 +69,6 @@ export default function ChatScreen({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
     padding: 10,
     backgroundColor: '#fff',
   },
@@ -99,6 +99,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
-
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 10,
   },
 });
