@@ -1,13 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import jwtDecode from 'jwt-decode';
 
 export default function MissionDetailsScreen({ route, navigation }) {
   const { mission } = route.params;
   const { _id: taskId, title: missionTitle, description: missionDetails, createdBy, status, createdAt, updatedAt } = mission;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [accepted, setAccepted] = useState(false);
+
+  useEffect(() => {
+    const getToken = async () => {
+      const storedToken = await AsyncStorage.getItem('userToken');
+      setToken(storedToken);
+      if (storedToken) {
+        const decodedToken = jwtDecode(storedToken);
+        setUserId(decodedToken.user_id);
+      }
+    };
+    getToken();
+  }, []);
 
   useEffect(() => {
     axios.get(`http://10.30.136.56:3001/tasks/${taskId}`)
@@ -20,6 +37,14 @@ export default function MissionDetailsScreen({ route, navigation }) {
         setLoading(false);
       });
   }, [taskId]);
+
+  useEffect(() => {
+    // เมื่อภารกิจถูกยอมรับแล้ว ให้เปลี่ยนไปหน้า IndividualChatScreen
+    if (accepted && userId && createdBy) {
+      console.log("Navigating to IndividualChatScreen with:", { contactId: createdBy });
+      navigation.navigate('IndividualChatScreen', { contactId: createdBy });
+    }
+  }, [accepted, userId, createdBy]);
 
   if (loading) {
     return (
@@ -38,6 +63,28 @@ export default function MissionDetailsScreen({ route, navigation }) {
   }
 
   const { creatorName, creatorPhone, address } = task;
+
+  const handleAcceptMission = async () => {
+    try {
+      const response = await fetch(`http://10.30.136.56:3001/missions/${taskId}/accept`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        Alert.alert('สำเร็จ', 'คุณได้ยอมรับภารกิจแล้ว');
+        setAccepted(true); // ตั้งค่าให้ useEffect ทำงานและนำทางไปยังแชท
+      } else {
+        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถยอมรับภารกิจได้');
+      }
+    } catch (error) {
+      console.error('Error accepting mission:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถยอมรับภารกิจได้');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -68,11 +115,7 @@ export default function MissionDetailsScreen({ route, navigation }) {
       {/* ปุ่มรับภารกิจ */}
       <TouchableOpacity
         style={styles.acceptButton}
-        onPress={() => navigation.navigate('ChatScreen', { 
-          creatorName, 
-          creatorPhone, 
-          missionTitle 
-        })}
+        onPress={handleAcceptMission}
       >
         <Text style={styles.acceptButtonText}>รับภารกิจ</Text>
       </TouchableOpacity>
