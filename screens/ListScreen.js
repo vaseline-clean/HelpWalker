@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import CustomHeader from '../components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
@@ -26,6 +26,7 @@ export default function ListScreen({ navigation }) {
   const [tasks, setTasks] = useState([]);
   const [token, setToken] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false); // สำหรับการจัดการสถานะการรีเฟรช
 
   useEffect(() => {
     const getToken = async () => {
@@ -86,10 +87,10 @@ export default function ListScreen({ navigation }) {
                 },
                 body: JSON.stringify({ status: 'Completed' }),
               });
-              
+
               const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
               await AsyncStorage.setItem('completedTasks', JSON.stringify([...completedTasks, { ...task, status: 'Completed' }]));
-              
+
               setTasks((prevTasks) => prevTasks.filter((t) => t._id !== task._id));
             } catch (error) {
               console.error('Error completing task:', error);
@@ -130,25 +131,33 @@ export default function ListScreen({ navigation }) {
     );
   };
 
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchTasks();
+    setIsRefreshing(false);
+  };
+
   return (
     <View style={styles.container}>
-      <CustomHeader 
-        navigation={navigation} 
-        title="รายการ" 
-        style={{ paddingTop: 30, paddingHorizontal: 20 }} // เพิ่ม padding
+      <CustomHeader
+        navigation={navigation}
+        title="รายการ"
+        style={styles.header} // ใช้สไตล์ที่มีตำแหน่ง absolute
       />
-      
+
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.refreshButton} onPress={fetchTasks}>
-          <Text style={styles.refreshText}>รีเฟรช</Text>
-        </TouchableOpacity>
-        <View style={styles.divider} />
         <TouchableOpacity style={styles.historyButton} onPress={() => navigation.navigate('CompletedTasksScreen')}>
           <Text style={styles.historyText}>ประวัติภารกิจสำเร็จ</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.acceptButton} onPress={() => navigation.navigate('AcceptTaskScreen')}>
+          <Text style={styles.buttonText}>รับภารกิจ</Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollView}>
+      <ScrollView
+        contentContainerStyle={styles.scrollView}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+      >
         {tasks.length > 0 ? (
           tasks.map((task) => (
             <TaskCard
@@ -172,8 +181,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4f4f4',
     padding: 1,
   },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 30,
+    paddingHorizontal: 20,
+  },
   scrollView: {
     paddingBottom: 16,
+    paddingTop: 10, // ลดระยะห่างจากส่วนปุ่ม
   },
   noTaskText: {
     fontSize: 14,
@@ -184,40 +202,35 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10, // ลดระยะห่างระหว่างปุ่มกับรายการภารกิจ
   },
-  refreshButton: {
+  historyButton: {
     flex: 1,
-    backgroundColor: '#FFA500',
+    backgroundColor: '#28a745',
     marginTop: 10,
     padding: 10,
     marginBottom: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
-  refreshText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  historyButton: {
+  acceptButton: {
     flex: 1,
-    backgroundColor: '#28a745',
-    marginTop: 10,  
+    backgroundColor: '#007bff',
+    marginTop: 10,
     padding: 10,
     marginBottom: 10,
     borderRadius: 8,
     alignItems: 'center',
+    marginLeft: 5, // ลดระยะห่างระหว่างปุ่ม
   },
   historyText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  divider: {
-    width: 1,
-    height: '100%',
-    backgroundColor: '#ccc',
-    marginHorizontal: 10,
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   card: {
     backgroundColor: '#fff',

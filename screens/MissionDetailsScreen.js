@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function MissionDetailsScreen({ route, navigation }) {
   const { mission } = route.params;
   const { _id: taskId, title: missionTitle, description: missionDetails, createdBy, status, createdAt, updatedAt } = mission;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Add error state
 
   useEffect(() => {
-    axios.get(`http://10.30.136.56:3001/tasks/${taskId}?populate=createdBy`) // Include createdBy reference
+    axios.get(`http://10.30.136.56:3001/tasks/${taskId}`)
       .then(response => {
         setTask(response.data);
         setLoading(false);
       })
       .catch(error => {
         console.error(error);
-        setError('Failed to load task details'); // Set error message
         setLoading(false);
       });
   }, [taskId]);
@@ -30,14 +29,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
     );
   }
 
-  if (error) { // Display error message
-    return (
-      <View style={styles.container}>
-        <Text>{error}</Text>
-      </View>
-    );
-  }
-
   if (!task) {
     return (
       <View style={styles.container}>
@@ -46,10 +37,15 @@ export default function MissionDetailsScreen({ route, navigation }) {
     );
   }
 
-  const { creatorName, creatorPhone, address } = task.createdBy; // Access createdBy details
+  const { creatorName, creatorPhone, address } = task;
 
   return (
     <View style={styles.container}>
+      {/* ปุ่มย้อนกลับ */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={30} color="#fff" />
+      </TouchableOpacity>
+
       {/* ข้อมูลผู้สร้างภารกิจ */}
       <View style={styles.card}>
         <Text style={styles.userName}>{creatorName}</Text>
@@ -90,16 +86,25 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 50,
+    zIndex: 1,
+  },
   card: {
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
-    padding: 15,
+    padding: 20,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 5,
   },
   userName: {
     fontSize: 18,
@@ -112,7 +117,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   missionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#333',
@@ -146,6 +151,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 'auto',
+    marginBottom: 20,
   },
   acceptButtonText: {
     fontSize: 18,
