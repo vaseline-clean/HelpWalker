@@ -58,7 +58,7 @@ export default function App() {
 
         {/* หน้ารายละเอียดภารกิจ (MissionDetailsScreen) */}
         <Stack.Screen 
-          name="MissionDetails" 
+          name="MissionDetailsScreen" 
           component={MissionDetailsScreen} 
           options={{ title: 'รายละเอียดภารกิจ', headerShown: true }}/>
 
