@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
 import axios from 'axios';
@@ -33,10 +34,12 @@ export default function ChatScreen({ route }) {
         console.error('Failed to send message:', error);
       });
     }
+
   };
 
   return (
     <View style={styles.container}>
+
       <FlatList
         data={messages}
         keyExtractor={(item) => item._id}
@@ -47,6 +50,7 @@ export default function ChatScreen({ route }) {
             <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
           </View>
         )}
+        contentContainerStyle={styles.messagesContainer}
       />
       <View style={styles.inputContainer}>
         <TextInput
@@ -64,6 +68,7 @@ export default function ChatScreen({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+
     padding: 10,
     backgroundColor: '#fff',
   },
@@ -94,5 +99,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
+
   },
 });
