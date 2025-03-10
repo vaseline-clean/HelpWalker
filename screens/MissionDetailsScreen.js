@@ -8,16 +8,17 @@ export default function MissionDetailsScreen({ route, navigation }) {
   const { _id: taskId, title: missionTitle, description: missionDetails } = mission;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Add error state
 
   useEffect(() => {
-    axios.get(`http://10.30.136.56:3001/tasks/${taskId}`)
+    axios.get(`http://10.30.136.56:3001/tasks/${taskId}?populate=createdBy`) // Include createdBy reference
       .then(response => {
         setTask(response.data);
         setLoading(false);
         console.log("Task Data:", response.data); // ตรวจสอบข้อมูลจาก API
       })
       .catch(error => {
-        console.error("Error fetching task:", error);
+        console.error(error);
         setLoading(false);
       });
   }, [taskId]);
@@ -30,6 +31,14 @@ export default function MissionDetailsScreen({ route, navigation }) {
     );
   }
 
+  if (error) { // Display error message
+    return (
+      <View style={styles.container}>
+        <Text>{error}</Text>
+      </View>
+    );
+  }
+
   if (!task) {
     return (
       <View style={styles.loadingContainer}>
@@ -38,9 +47,8 @@ export default function MissionDetailsScreen({ route, navigation }) {
     );
   }
 
-  const { creatorName, creatorPhone, address, reward, latitude, longitude } = task;
 
-  console.log("Extracted Coordinates:", latitude, longitude);
+  const { creatorName, creatorPhone, address, reward } = task;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -105,7 +113,11 @@ export default function MissionDetailsScreen({ route, navigation }) {
       {/* ปุ่มรับภารกิจ */}
       <TouchableOpacity
         style={styles.acceptButton}
-        onPress={() => navigation.navigate('ChatScreen', { creatorName, creatorPhone, missionTitle })}
+        onPress={() => navigation.navigate('ChatScreen', { 
+          creatorName, 
+          creatorPhone, 
+          missionTitle 
+        })}
       >
         <Text style={styles.acceptButtonText}>✅ รับภารกิจ</Text>
       </TouchableOpacity>
