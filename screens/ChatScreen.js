@@ -8,7 +8,7 @@ export default function ChatScreen({ route }) {
   const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
-    axios.get(`http://localhost:3001/chat/messages/${chat.taskId}`)
+    axios.get(`http://10.30.136.56:3001/chat/messages/${chat.taskId}`)
       .then(response => {
         setMessages(response.data);
       })
@@ -19,7 +19,7 @@ export default function ChatScreen({ route }) {
 
   const sendMessage = () => {
     if (newMessage.trim()) {
-      axios.post('http://localhost:3001/chat/messages', {
+      axios.post('http://10.30.136.56:3001/chat/messages', {
         taskId: chat.taskId,
         sender: chat.sender._id,
         text: newMessage,
