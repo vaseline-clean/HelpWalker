@@ -1,63 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert, Button } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 import CustomHeader from '../components/CustomHeader';
 import ChatScreen from './ChatScreen';
 
 export default function ChatListScreen({ navigation, route }) {
-  const { user } = route.params;
+  const user = route && route.params ? route.params.user : null;
   const [chats, setChats] = useState([]);
-  const [retry, setRetry] = useState(false);
 
-  const fetchChats = () => {
+  useEffect(() => {
     if (user) {
-      axios.get(`http://localhost:3001/chat/messages/${user.id}`)
+      axios.get(`http://10.30.136.56:3001/chat/messages/${user.id}`)
         .then(response => {
           setChats(response.data);
-          setRetry(false);
         })
         .catch(error => {
           console.error('Failed to fetch chats:', error);
           Alert.alert('Error', 'Failed to fetch chats. Please try again later.');
-          setRetry(true);
         });
     }
-  };
-
-  useEffect(() => {
-    fetchChats();
   }, [user]);
 
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="Chats" />
-      {retry ? (
-        <View style={styles.retryContainer}>
-          <Text style={styles.errorText}>Failed to fetch chats. Please try again later.</Text>
-          <Button title="Retry" onPress={fetchChats} />
-        </View>
-      ) : (
-        <FlatList
-          data={chats}
-          keyExtractor={(item) => item._id} // Ensure each item has a unique key
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.chatItemContainer}
-              onPress={() => navigation.navigate('ChatScreen', { chat: item })}
-            >
-              <Image source={{ uri: item.sender.avatar }} style={styles.avatar} />
-              <View style={styles.chatContentContainer}>
-                <View style={styles.chatHeader}>
-                  <Text style={styles.nameText}>{item.sender.name}</Text>
-                  <Text style={styles.timeText}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
-                </View>
-                <Text style={styles.lastMessageText}>{item.text}</Text>
+      <FlatList
+        data={chats}
+        keyExtractor={(item) => item._id} // Ensure each item has a unique key
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.chatItemContainer}
+            onPress={() => navigation.navigate('ChatScreen', { chat: item })}
+          >
+            <Image source={{ uri: item.sender.avatar }} style={styles.avatar} />
+            <View style={styles.chatContentContainer}>
+              <View style={styles.chatHeader}>
+                <Text style={styles.nameText}>{item.sender.name}</Text>
+                <Text style={styles.timeText}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
               </View>
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={styles.chatListContainer}
-        />
-      )}
+              <Text style={styles.lastMessageText}>{item.text}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={styles.chatListContainer}
+      />
     </View>
   );
 }
@@ -66,15 +52,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  retryContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
   },
   chatListContainer: {
     padding: 10,

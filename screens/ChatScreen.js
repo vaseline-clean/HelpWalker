@@ -1,7 +1,6 @@
-// ChatScreen.js
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import CustomHeader from '../components/CustomHeader';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
+import axios from 'axios';
 
 export default function ChatScreen({ route }) {
   const { chat } = route.params;
@@ -38,23 +37,17 @@ export default function ChatScreen({ route }) {
 
   return (
     <View style={styles.container}>
-      <CustomHeader navigation={navigation} title={chat.name} onBack={() => navigation.goBack()} />
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <View style={[styles.messageBubble, item.sender === 'me' ? styles.myMessage : styles.otherMessage]}>
+          <View style={styles.messageContainer}>
+            <Text style={styles.senderName}>{item.sender.name}</Text>
             <Text style={styles.messageText}>{item.text}</Text>
             <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
           </View>
-
-          <TouchableOpacity style={styles.contactItem} onPress={() => handleChat(item.id)}>
-            <Text style={styles.contactName}>{item.name}</Text>
-          </TouchableOpacity>
-
         )}
       />
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -64,15 +57,18 @@ export default function ChatScreen({ route }) {
         />
         <Button title="Send" onPress={sendMessage} />
       </View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 10,
     backgroundColor: '#fff',
   },
-  messagesContainer: {
-    flexGrow: 1,
-    padding: 10,
+  messageContainer: {
+    marginBottom: 10,
   },
   senderName: {
     fontWeight: 'bold',
@@ -98,16 +94,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
-    backgroundColor: '#f9f9f9',
-  },
-  sendButton: {
-    backgroundColor: '#0078fe',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });
