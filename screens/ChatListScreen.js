@@ -1,32 +1,44 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import axios from 'axios';
 import CustomHeader from '../components/CustomHeader';
 import ChatScreen from './ChatScreen';
 
-export default function ChatListScreen({ navigation }) {
-  const [chats, setChats] = useState([
-    { id: '1', name: 'Munin', lastMessage: 'สวัสดี! มีอะไรให้ช่วยไหม?', time: '8:36 am', avatar: 'https://example.com/avatar1.png' },
-    { id: '2', name: 'Arun', lastMessage: 'ขอข้อมูลเพิ่มเติมเกี่ยวกับงานหน่อยครับ', time: '8:37 am', avatar: 'https://example.com/avatar2.png' },
-  ]);
+export default function ChatListScreen({ navigation, route }) {
+  const user = route && route.params ? route.params.user : null;
+  const [chats, setChats] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      axios.get(`http://10.30.136.56:3001/chat/messages/${user.id}`)
+        .then(response => {
+          setChats(response.data);
+        })
+        .catch(error => {
+          console.error('Failed to fetch chats:', error);
+          Alert.alert('Error', 'Failed to fetch chats. Please try again later.');
+        });
+    }
+  }, [user]);
 
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="Chats" />
       <FlatList
         data={chats}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id} // Ensure each item has a unique key
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.chatItemContainer}
             onPress={() => navigation.navigate('ChatScreen', { chat: item })}
           >
-            <Image source={{ uri: item.avatar }} style={styles.avatar} />
+            <Image source={{ uri: item.sender.avatar }} style={styles.avatar} />
             <View style={styles.chatContentContainer}>
               <View style={styles.chatHeader}>
-                <Text style={styles.nameText}>{item.name}</Text>
-                <Text style={styles.timeText}>{item.time}</Text>
+                <Text style={styles.nameText}>{item.sender.name}</Text>
+                <Text style={styles.timeText}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
               </View>
-              <Text style={styles.lastMessageText}>{item.lastMessage}</Text>
+              <Text style={styles.lastMessageText}>{item.text}</Text>
             </View>
           </TouchableOpacity>
         )}
