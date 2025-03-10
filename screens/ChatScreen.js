@@ -1,29 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CustomHeader from '../components/CustomHeader';
 import MissionDetailsScreen from './MissionDetailsScreen';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000');
 
 export default function ChatScreen({ navigation }) {
   const [chats, setChats] = useState([
-    { id: '1', name: 'Munin', lastMessage: 'สวัสดี! มีอะไรให้ช่วยไหม?', time: '8:36 am', avatar: 'https://example.com/avatar1.png' },
-    { id: '2', name: 'Arun', lastMessage: 'ขอข้อมูลเพิ่มเติมเกี่ยวกับงานหน่อยครับ', time: '8:37 am', avatar: 'https://example.com/avatar2.png' },
+    { id: '1', userId: 'user1', lastMessage: 'สวัสดี! มีอะไรให้ช่วยไหม?', time: '8:36 am', avatar: 'https://example.com/avatar1.png' },
+    { id: '2', userId: 'user2', lastMessage: 'ขอข้อมูลเพิ่มเติมเกี่ยวกับงานหน่อยครับ', time: '8:37 am', avatar: 'https://example.com/avatar2.png' },
   ]);
 
   const [selectedChat, setSelectedChat] = useState(null);
-  const [messages, setMessages] = useState([
-    { id: '1', text: 'สวัสดี! มีอะไรให้ช่วยไหม?', sender: 'other' },
-    { id: '2', text: 'สวัสดีครับ ขอข้อมูลเพิ่มเติมเกี่ยวกับงานหน่อยครับ', sender: 'me' },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
+
+  useEffect(() => {
+    if (selectedChat) {
+      socket.emit('joinChat', selectedChat.id);
+
+      socket.on('receiveMessage', (message) => {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      });
+
+      return () => {
+        socket.off('receiveMessage');
+      };
+    }
+  }, [selectedChat]);
 
   const sendMessage = () => {
     if (inputText.trim() === '') return;
-    setMessages([
-      ...messages,
-      { id: Date.now().toString(), text: inputText, sender: 'me' },
-    ]);
+
+    const message = {
+      chatId: selectedChat.id,
+      text: inputText,
+      sender: 'me',
+      timestamp: new Date(),
+    };
+
+    socket.emit('sendMessage', message);
     setInputText('');
   };
 
@@ -43,7 +62,7 @@ export default function ChatScreen({ navigation }) {
               <Image source={{ uri: item.avatar }} style={styles.avatar} />
               <View style={styles.chatContentContainer}>
                 <View style={styles.chatHeader}>
-                  <Text style={styles.nameText}>{item.name}</Text>
+                  <Text style={styles.nameText}>{item.userId}</Text>
                   <Text style={styles.timeText}>{item.time}</Text>
                 </View>
                 <Text style={styles.lastMessageText}>{item.lastMessage}</Text>
@@ -58,11 +77,11 @@ export default function ChatScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <CustomHeader navigation={navigation} title={selectedChat.name} onBack={() => setSelectedChat(null)} />
+      <CustomHeader navigation={navigation} title={selectedChat.userId} onBack={() => setSelectedChat(null)} />
 
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View
             style={[
@@ -92,91 +111,5 @@ export default function ChatScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  chatListContainer: {
-    padding: 10,
-  },
-  chatItemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  chatContentContainer: {
-    flex: 1,
-  },
-  chatHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  nameText: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  timeText: {
-    fontSize: 12,
-    color: '#888',
-  },
-  lastMessageText: {
-    color: '#555',
-    marginTop: 2,
-  },
-  messagesContainer: {
-    flexGrow: 1,
-    padding: 10,
-  },
-  messageBubble: {
-    maxWidth: '70%',
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 5,
-  },
-  myMessage: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#0078fe',
-  },
-  otherMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e5e5e5',
-  },
-  messageText: {
-    color: '#fff',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderTopWidth: 1,
-    borderColor: '#ccc',
-  },
-  textInput: {
-    flex: 1,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 20,
-    marginRight: 10,
-    backgroundColor: '#f9f9f9',
-  },
-  sendButton: {
-    backgroundColor: '#0078fe',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+  // ...existing styles...
 });
-
