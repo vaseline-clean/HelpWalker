@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import axios from 'axios';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function MissionDetailsScreen({ route, navigation }) {
   const { mission } = route.params;
-  const { _id: taskId, title: missionTitle, description: missionDetails, createdBy, status, createdAt, updatedAt } = mission;
+  const { _id: taskId, title: missionTitle, description: missionDetails } = mission;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,47 +22,61 @@ export default function MissionDetailsScreen({ route, navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
       </View>
     );
   }
 
   if (!task) {
     return (
-      <View style={styles.container}>
-        <Text>Task not found</Text>
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>ไม่พบข้อมูลภารกิจ</Text>
       </View>
     );
   }
 
-  const { creatorName, creatorPhone, address } = task;
+  const { creatorName, creatorPhone, address, reward } = task;
 
   return (
     <View style={styles.container}>
-      {/* ปุ่มย้อนกลับ */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={30} color="#fff" />
-      </TouchableOpacity>
+      {/* รายละเอียดภารกิจ */}
+      {missionTitle || missionDetails ? (
+        <View style={styles.card}>
+          {missionTitle && <Text style={styles.missionTitle}>{missionTitle}</Text>}
+          {missionDetails && (
+            <>
+              <Text style={styles.missionDetailsTitle}>รายละเอียดภารกิจ</Text>
+              <Text style={styles.missionDetails}>{missionDetails}</Text>
+            </>
+          )}
+        </View>
+      ) : null}
 
       {/* ข้อมูลผู้สร้างภารกิจ */}
-      <View style={styles.card}>
-        <Text style={styles.userName}>{creatorName}</Text>
-        <Text style={styles.userPhone}>{creatorPhone}</Text>
-      </View>
+      {creatorName || creatorPhone ? (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>👤 ผู้สร้างภารกิจ</Text>
+          {creatorName && <Text style={styles.userName}>{creatorName}</Text>}
+          {creatorPhone && <Text style={styles.userPhone}>📞 {creatorPhone}</Text>}
+        </View>
+      ) : null}
 
-      {/* รายละเอียดภารกิจ */}
-      <View style={styles.card}>
-        <Text style={styles.missionTitle}>{missionTitle}</Text>
-        <Text style={styles.missionDetailsTitle}>รายละเอียดภารกิจ</Text>
-        <Text style={styles.missionDetails}>{missionDetails}</Text>
-      </View>
+      {/* ที่อยู่ของผู้สร้างภารกิจ */}
+      {address ? (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>📍 ที่อยู่</Text>
+          <Text style={styles.address}>{address}</Text>
+        </View>
+      ) : null}
 
-      {/* ที่อยู่ */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>ที่อยู่ของผู้สร้างภารกิจ</Text>
-        <Text style={styles.address}>{address}</Text>
-      </View>
+      {/* ของตอบแทน */}
+      {reward ? (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>🎁 ของตอบแทน</Text>
+          <Text style={styles.reward}>{reward}</Text>
+        </View>
+      ) : null}
 
       {/* ปุ่มรับภารกิจ */}
       <TouchableOpacity
@@ -74,7 +87,7 @@ export default function MissionDetailsScreen({ route, navigation }) {
           missionTitle 
         })}
       >
-        <Text style={styles.acceptButtonText}>รับภารกิจ</Text>
+        <Text style={styles.acceptButtonText}>✅ รับภารกิจ</Text>
       </TouchableOpacity>
     </View>
   );
@@ -84,40 +97,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#F3F4F6',
   },
-  backButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    backgroundColor: '#4CAF50',
-    padding: 10,
-    borderRadius: 50,
-    zIndex: 1,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
+    fontWeight: 'bold',
   },
   card: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 10,
+    backgroundColor: '#fff',
+    borderRadius: 12,
     padding: 20,
-    marginBottom: 20,
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 5,
-    elevation: 5,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#333',
-  },
-  userPhone: {
-    fontSize: 16,
-    color: '#555',
+    elevation: 4,
+    borderLeftWidth: 5,
+    borderLeftColor: '#4CAF50',
   },
   missionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#333',
@@ -132,17 +139,33 @@ const styles = StyleSheet.create({
   missionDetails: {
     fontSize: 16,
     color: '#555',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 10,
+    color: '#0078fe',
+    marginBottom: 8,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#333',
+    marginBottom: 4,
+  },
+  userPhone: {
+    fontSize: 16,
+    color: '#555',
   },
   address: {
     fontSize: 16,
     color: '#555',
+    lineHeight: 22,
+  },
+  reward: {
+    fontSize: 16,
+    color: '#d97706',
+    fontWeight: 'bold',
     lineHeight: 22,
   },
   acceptButton: {
@@ -152,6 +175,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 'auto',
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
   acceptButtonText: {
     fontSize: 18,
