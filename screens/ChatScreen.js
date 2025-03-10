@@ -1,45 +1,61 @@
-// ChatScreen.js
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import CustomHeader from '../components/CustomHeader';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
+import axios from 'axios';
 
-export default function ChatScreen({ route, navigation }) {
+export default function ChatScreen({ route }) {
   const { chat } = route.params;
-  const [messages, setMessages] = useState([
-    { id: '1', text: 'สวัสดี! มีอะไรให้ช่วยไหม?', sender: 'other' },
-    { id: '2', text: 'สวัสดีครับ ขอข้อมูลเพิ่มเติมเกี่ยวกับงานหน่อยครับ', sender: 'me' },
-  ]);
-  const [inputText, setInputText] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+
+  useEffect(() => {
+    axios.get(`http://localhost:3001/chat/messages/${chat.taskId}`)
+      .then(response => {
+        setMessages(response.data);
+      })
+      .catch(error => {
+        console.error('Failed to fetch messages:', error);
+      });
+  }, [chat.taskId]);
 
   const sendMessage = () => {
-    if (inputText.trim() === '') return;
-    setMessages([...messages, { id: Date.now().toString(), text: inputText, sender: 'me' }]);
-    setInputText('');
+    if (newMessage.trim()) {
+      axios.post('http://localhost:3001/chat/messages', {
+        taskId: chat.taskId,
+        sender: chat.sender._id,
+        text: newMessage,
+        messageType: 'text'
+      })
+      .then(response => {
+        setMessages([...messages, response.data]);
+        setNewMessage('');
+      })
+      .catch(error => {
+        console.error('Failed to send message:', error);
+      });
+    }
   };
 
   return (
     <View style={styles.container}>
-      <CustomHeader navigation={navigation} title={chat.name} onBack={() => navigation.goBack()} />
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <View style={[styles.messageBubble, item.sender === 'me' ? styles.myMessage : styles.otherMessage]}>
+          <View style={styles.messageContainer}>
+            <Text style={styles.senderName}>{item.sender.name}</Text>
             <Text style={styles.messageText}>{item.text}</Text>
+            <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
           </View>
         )}
-        contentContainerStyle={styles.messagesContainer}
       />
       <View style={styles.inputContainer}>
         <TextInput
-          style={styles.textInput}
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="พิมพ์ข้อความ..."
+          style={styles.input}
+          value={newMessage}
+          onChangeText={setNewMessage}
+          placeholder="Type a message"
         />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendButtonText}>ส่ง</Text>
-        </TouchableOpacity>
+        <Button title="Send" onPress={sendMessage} />
       </View>
     </View>
   );
@@ -48,53 +64,35 @@ export default function ChatScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 10,
     backgroundColor: '#fff',
   },
-  messagesContainer: {
-    flexGrow: 1,
-    padding: 10,
+  messageContainer: {
+    marginBottom: 10,
   },
-  messageBubble: {
-    maxWidth: '70%',
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 5,
-  },
-  myMessage: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#0078fe',
-  },
-  otherMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e5e5e5',
+  senderName: {
+    fontWeight: 'bold',
   },
   messageText: {
-    color: '#fff',
+    fontSize: 16,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#888',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
     borderTopWidth: 1,
-    borderColor: '#ccc',
+    borderTopColor: '#e5e5e5',
   },
-  textInput: {
+  input: {
     flex: 1,
-    padding: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 20,
+    borderColor: '#e5e5e5',
+    borderRadius: 5,
+    padding: 10,
     marginRight: 10,
-    backgroundColor: '#f9f9f9',
-  },
-  sendButton: {
-    backgroundColor: '#0078fe',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });

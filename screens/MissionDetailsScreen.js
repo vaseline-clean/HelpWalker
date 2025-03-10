@@ -78,10 +78,13 @@ export default function MissionDetailsScreen({ route, navigation }) {
       {/* ปุ่มรับภารกิจ */}
       <TouchableOpacity
         style={styles.acceptButton}
-        onPress={() => navigation.navigate('ChatScreen', { 
-          creatorName, 
-          creatorPhone, 
-          missionTitle 
+        onPress={() => navigation.navigate('ChatListScreen', { 
+          user: {
+            id: task.createdBy._id,
+            name: creatorName,
+            phone: creatorPhone,
+            avatar: 'https://example.com/avatar.png' // Add avatar if available
+          }
         })}
       >
         <Text style={styles.acceptButtonText}>รับภารกิจ</Text>
