@@ -70,37 +70,46 @@ export default function ListScreen({ navigation }) {
   }, [token, userId]);
 
   const handleComplete = async (task) => {
-    Alert.alert(
-      "ยืนยันการเสร็จสิ้น?",
-      "คุณแน่ใจหรือไม่ว่าต้องการทำภารกิจนี้ให้สำเร็จ?",
-      [
-        { text: "ยกเลิก", style: "cancel" },
-        {
-          text: "ยืนยัน",
-          onPress: async () => {
-            try {
-              await fetch(`http://10.30.136.56:3001/tasks/${task._id}/complete`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ status: 'Completed' }),
-              });
+  Alert.alert(
+    "ยืนยันการเสร็จสิ้น?",
+    "คุณแน่ใจหรือไม่ว่าต้องการทำภารกิจนี้ให้สำเร็จ?",
+    [
+      { text: "ยกเลิก", style: "cancel" },
+      {
+        text: "ยืนยัน",
+        onPress: async () => {
+          try {
+            console.log(`Updating task ID: ${task._id}`);
 
-              const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
-              await AsyncStorage.setItem('completedTasks', JSON.stringify([...completedTasks, { ...task, status: 'Completed' }]));
+            const response = await fetch(`http://10.30.136.56:3001/tasks/${task._id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              body: JSON.stringify({ status: 'completed' }), // เปลี่ยนให้แน่ใจว่าใช้ค่าถูกต้อง
+            });
 
-              setTasks((prevTasks) => prevTasks.filter((t) => t._id !== task._id));
-            } catch (error) {
-              console.error('Error completing task:', error);
-              Alert.alert('ข้อผิดพลาด', 'ไม่สามารถทำภารกิจให้สำเร็จได้');
+            if (!response.ok) {
+              throw new Error('Failed to update task');
             }
-          },
+
+            console.log('Task updated successfully');
+
+            // บันทึกลง AsyncStorage
+            const completedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
+            await AsyncStorage.setItem('completedTasks', JSON.stringify([...completedTasks, { ...task, status: 'completed' }]));
+
+            setTasks((prevTasks) => prevTasks.filter((t) => t._id !== task._id));
+          } catch (error) {
+            console.error('Error completing task:', error);
+            Alert.alert('ข้อผิดพลาด', 'ไม่สามารถทำภารกิจให้สำเร็จได้');
+          }
         },
-      ]
-    );
-  };
+      },
+    ]
+  );
+};
 
   const handleDelete = (id) => {
     Alert.alert(

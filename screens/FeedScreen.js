@@ -6,9 +6,9 @@ import { useFocusEffect } from '@react-navigation/native';
 
 export default function FeedScreen({ route, navigation }) {
   const [missions, setMissions] = useState([]);
-  const [isRefreshing, setIsRefreshing] = useState(false); // state สำหรับจัดการการรีเฟรช
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // ฟังก์ชันในการดึงข้อมูลภารกิจจาก API
+  // 📌 ฟังก์ชันดึงข้อมูลภารกิจ
   const fetchAllTasks = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
@@ -22,7 +22,9 @@ export default function FeedScreen({ route, navigation }) {
 
       const data = await response.json();
       if (response.ok) {
-        setMissions(data);
+        // ✅ กรองเฉพาะภารกิจที่ยังไม่สำเร็จ
+        const filteredMissions = data.filter(task => task.status !== 'completed');
+        setMissions(filteredMissions);
       } else {
         Alert.alert('ข้อผิดพลาด', data.message || 'ไม่สามารถดึงข้อมูลภารกิจได้');
       }
@@ -30,32 +32,32 @@ export default function FeedScreen({ route, navigation }) {
       console.error('Error fetching tasks:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจได้');
     } finally {
-      setIsRefreshing(false); // เมื่อการรีเฟรชเสร็จสิ้น
+      setIsRefreshing(false);
     }
   };
 
-  // ดึงข้อมูลภารกิจเมื่อหน้าจอโฟกัส
+  // 📌 รีเฟรชข้อมูลเมื่อหน้าจอโฟกัส
   useFocusEffect(
     React.useCallback(() => {
       fetchAllTasks();
-    }, []) // ทำงานเมื่อหน้าจอโฟกัส
+    }, [])
   );
 
-  // ใช้ effect นี้เพื่อตรวจจับการส่งข้อมูล newMission จากหน้าจอ PostScreen
+  // 📌 อัปเดตรายการเมื่อมีการรับ params จากหน้ารายละเอียดภารกิจ
   useEffect(() => {
-    if (route.params?.newMission) {
-      setMissions((prevMissions) => [route.params.newMission, ...prevMissions]); // เพิ่มภารกิจใหม่ที่ตำแหน่งแรก
+    if (route.params?.completedMissionId) {
+      setMissions(prevMissions => prevMissions.filter(mission => mission._id !== route.params.completedMissionId));
     }
-  }, [route.params?.newMission]);
+  }, [route.params?.completedMissionId]);
 
   const handlePress = (mission) => {
-    navigation.navigate('MissionDetailsScreen', { mission }); // ไปที่หน้ารายละเอียดภารกิจ
+    navigation.navigate('MissionDetailsScreen', { mission });
   };
 
-  // ฟังก์ชันสำหรับการรีเฟรช 
+  // 📌 ฟังก์ชันรีเฟรชข้อมูล
   const onRefresh = () => {
-    setIsRefreshing(true); // กำหนดให้กำลังรีเฟรช
-    fetchAllTasks(); // เรียกฟังก์ชันดึงข้อมูลใหม่
+    setIsRefreshing(true);
+    fetchAllTasks();
   };
 
   return (
@@ -63,26 +65,20 @@ export default function FeedScreen({ route, navigation }) {
       <CustomHeader navigation={navigation} title="ฟีด" />
       <FlatList
         data={missions}
-        extraData={missions} // ให้ FlatList รีเฟรชเมื่อ missions เปลี่ยน
+        extraData={missions}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.missionItem}>
             <Text style={styles.missionTitle}>{item.title}</Text>
             <Text>{item.description}</Text>
             <Text style={styles.reward}>🎁 {item.reward}</Text>
-            <TouchableOpacity
-              style={styles.detailsButton}
-              onPress={() => handlePress(item)} // เมื่อกดปุ่มจะไปที่หน้ารายละเอียดภารกิจ
-            >
+            <TouchableOpacity style={styles.detailsButton} onPress={() => handlePress(item)}>
               <Text style={styles.detailsButtonText}>ดูรายละเอียด</Text>
             </TouchableOpacity>
           </View>
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>ยังไม่มีภารกิจ</Text>}
-        // การเพิ่ม RefreshControl เพื่อใช้ในการรีเฟรชข้อมูล
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
       />
     </View>
   );
