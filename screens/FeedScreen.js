@@ -48,7 +48,10 @@ export default function FeedScreen({ route, navigation }) {
     if (route.params?.completedMissionId) {
       setMissions(prevMissions => prevMissions.filter(mission => mission._id !== route.params.completedMissionId));
     }
-  }, [route.params?.completedMissionId]);
+    if (route.params?.acceptedTask) {
+      setMissions(prevMissions => prevMissions.filter(mission => mission._id !== route.params.acceptedTask._id));
+    }
+  }, [route.params?.completedMissionId, route.params?.acceptedTask]);
 
   const handlePress = (mission) => {
     navigation.navigate('MissionDetailsScreen', { mission });
