@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert, Button, TextInput } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomHeader from '../components/CustomHeader';
 import ChatScreen from './ChatScreen';
 
@@ -10,27 +11,47 @@ export default function ChatListScreen({ navigation, route }) {
   const [filteredChats, setFilteredChats] = useState([]);
   const [noChats, setNoChats] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [userToken, setUserToken] = useState(null); // State for user token
 
   const createNewChat = () => {
-    // Logic to create a new chat
     const newChat = {
       _id: 'new_chat_id',
       sender: {
-        name: 'New Chat',
+        _id: user.id,
+        name: user.name,
+        avatar: user.avatar,
       },
+      taskId: 'new_task_id',
       timestamp: new Date(),
-      text: 'This is a new chat message.',
+      text: '',
     };
-    setChats([newChat]);
-    setNoChats(false);
+    navigation.navigate('ChatScreen', { chat: newChat });
   };
 
   useEffect(() => {
-    if (user && user.id) {
-      axios.get(`http://10.30.136.56:3001/chat/messages/${user.id}`)
+    const fetchUserToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (token) {
+          setUserToken(token);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user token:', error);
+      }
+    };
+
+    fetchUserToken();
+  }, []);
+
+  useEffect(() => {
+    if (user && user.id && userToken) {
+      axios.get(`http://10.30.136.56:3001/chat/messages/${user.id}`, {
+        headers: { Authorization: `Bearer ${userToken}` }
+      })
         .then(response => {
           if (response.data.length === 0) {
             setNoChats(true);
+            Alert.alert('Notification', 'ยังไม่มีการพูดคุย');
           } else {
             setChats(response.data);
             setFilteredChats(response.data);
@@ -48,7 +69,7 @@ export default function ChatListScreen({ navigation, route }) {
           }
         });
     }
-  }, [user]);
+  }, [user, userToken]);
 
   const handleSearch = (text) => {
     setSearchText(text);
@@ -63,12 +84,6 @@ export default function ChatListScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="Chats" />
-      <TextInput
-        style={styles.searchBar}
-        placeholder="ค้นหาแชท..."
-        value={searchText}
-        onChangeText={handleSearch}
-      />
       {noChats ? (
         <View style={styles.noChatsContainer}>
           <Text style={styles.noChatsText}>No chats found for this user.</Text>
@@ -104,14 +119,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  searchBar: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    margin: 10,
   },
   noChatsContainer: {
     flex: 1,
