@@ -4,15 +4,22 @@ import CustomHeader from '../components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 
-const TaskCard = ({ task, onDelete }) => {
+const TaskCard = ({ task, onDelete, onRedo }) => {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{task.title}</Text>
       <Text style={styles.description}>{task.description}</Text>
-      <Text style={styles.status}>สถานะ: {String(task.status)}</Text> 
-      <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(task._id)}>
-        <Text style={styles.buttonText}>ลบ</Text>
-      </TouchableOpacity>
+      <Text style={styles.status}>สถานะ: {String(task.status)}</Text>
+
+      {/* ✅ ปุ่ม "ทำใหม่อีกครั้ง" และ "ลบ" อยู่ข้างกัน */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.redoButton} onPress={() => onRedo(task._id)}>
+          <Text style={styles.buttonText}>ทำใหม่อีกครั้ง</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(task._id)}>
+          <Text style={styles.buttonText}>ลบ</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -20,7 +27,7 @@ const TaskCard = ({ task, onDelete }) => {
 export default function CompletedTasksScreen({ navigation }) {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [userId, setUserId] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false); // ✅ State สำหรับการรีเฟรช
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchCompletedTasks();
@@ -28,7 +35,7 @@ export default function CompletedTasksScreen({ navigation }) {
 
   const fetchCompletedTasks = async () => {
     try {
-      setIsRefreshing(true); // ✅ เริ่มการรีเฟรช
+      setIsRefreshing(true);
       const storedToken = await AsyncStorage.getItem('userToken');
       if (storedToken) {
         const decodedToken = jwtDecode(storedToken);
@@ -43,7 +50,7 @@ export default function CompletedTasksScreen({ navigation }) {
       console.error('Error fetching completed tasks:', error);
       Alert.alert('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลภารกิจที่เสร็จสิ้นได้');
     } finally {
-      setIsRefreshing(false); // ✅ หยุดการรีเฟรชเมื่อโหลดเสร็จ
+      setIsRefreshing(false);
     }
   };
 
@@ -81,18 +88,55 @@ export default function CompletedTasksScreen({ navigation }) {
     );
   };
 
+  const handleRedo = async (taskId) => {
+    Alert.alert(
+      "ยืนยันการทำใหม่?",
+      "คุณต้องการย้ายภารกิจนี้กลับไปที่รายการรอดำเนินการหรือไม่?",
+      [
+        { text: "ยกเลิก", style: "cancel" },
+        {
+          text: "ยืนยัน",
+          onPress: async () => {
+            try {
+              const storedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
+              const taskToRedo = storedTasks.find(task => task._id === taskId);
+              
+              if (!taskToRedo) return;
+
+              // อัปเดตสถานะเป็น 'pending'
+              taskToRedo.status = 'pending';
+
+              // ลบออกจาก completedTasks และเพิ่มกลับไปยัง pendingTasks
+              const updatedCompletedTasks = storedTasks.filter(task => task._id !== taskId);
+              await AsyncStorage.setItem('completedTasks', JSON.stringify(updatedCompletedTasks));
+
+              const pendingTasks = JSON.parse(await AsyncStorage.getItem('pendingTasks')) || [];
+              pendingTasks.push(taskToRedo);
+              await AsyncStorage.setItem('pendingTasks', JSON.stringify(pendingTasks));
+
+              setCompletedTasks(updatedCompletedTasks);
+              Alert.alert('สำเร็จ', 'ภารกิจถูกย้ายกลับไปยังรายการที่รอดำเนินการ');
+            } catch (error) {
+              console.error('Error updating task status:', error);
+              Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัปเดตสถานะภารกิจได้');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <CustomHeader navigation={navigation} title="ประวัติภารกิจสำเร็จ" />
 
-      {/* ✅ ใช้ RefreshControl เพื่อให้สามารถลากลงเพื่อรีเฟรชได้ */}
       <ScrollView 
         contentContainerStyle={styles.scrollView}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={fetchCompletedTasks} />}
       >
         {completedTasks.length > 0 ? (
           completedTasks.map((task) => (
-            <TaskCard key={task._id} task={task} onDelete={handleDelete} />
+            <TaskCard key={task._id} task={task} onDelete={handleDelete} onRedo={handleRedo} />
           ))
         ) : (
           <Text style={styles.noTaskText}>ไม่มีภารกิจที่เสร็จสิ้นในขณะนี้</Text>
@@ -139,11 +183,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
   },
-  deleteButton: {
+  buttonContainer: {
+    flexDirection: 'row', // ✅ ปุ่มอยู่ข้างกัน
+    justifyContent: 'space-between',
     marginTop: 10,
+  },
+  redoButton: {
+    flex: 1,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 8,
+    marginRight: 5,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  deleteButton: {
+    flex: 1,
     backgroundColor: '#F44336',
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    marginLeft: 5,
     borderRadius: 5,
     alignItems: 'center',
   },

@@ -50,7 +50,7 @@ export default function SignupScreen({ navigation }) {
 
       if (response.ok) {
         Alert.alert('สำเร็จ', 'สมัครใช้งานสำเร็จแล้ว');
-        navigation.navigate('Login');
+        navigation.navigate('LoginScreen');
       } else {
         Alert.alert('ข้อผิดพลาด', data.message || 'เกิดข้อผิดพลาดในการสมัครใช้งาน');
       }
@@ -104,7 +104,7 @@ export default function SignupScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.linkButton}
-        onPress={() => navigation.navigate('Login')}
+        onPress={() => navigation.navigate('LoginScreen')}
       >
         <Text style={styles.linkText}>กลับไปหน้าล็อคอิน</Text>
       </TouchableOpacity>

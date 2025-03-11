@@ -19,14 +19,14 @@ const Stack = createStackNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="LoginScreen">
         {/* หน้าจอ Login */}
         <Stack.Screen 
           name="EditProfileScreen" 
           component={EditProfileScreen} 
           options={{ headerShown: false }}/>
         <Stack.Screen 
-          name="Login" 
+          name="LoginScreen" 
           component={LoginScreen} 
           options={{ headerShown: false }}/>
 
