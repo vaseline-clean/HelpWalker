@@ -51,10 +51,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
 
       // นำทางไปยังหน้าถัดไปพร้อมกับข้อมูล
       navigation.navigate('ChatScreen', {
-        chat: {
-          sender: { _id: taskId, name: creatorName, phone: creatorPhone },
-          missionTitle
-        },
         taskId // ส่ง taskId ไปด้วย
       });
     } catch (error) {
