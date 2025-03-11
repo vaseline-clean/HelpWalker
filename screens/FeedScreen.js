@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, Alert, RefreshControl, TouchableOpaci
 import CustomHeader from '../components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import { jwtDecode } from 'jwt-decode'; // Fix import statement
 
 export default function FeedScreen({ route, navigation }) {
   const [missions, setMissions] = useState([]);
@@ -12,6 +13,10 @@ export default function FeedScreen({ route, navigation }) {
   const fetchAllTasks = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
+      const userId = await AsyncStorage.getItem('userId');
+
+      console.log("User ID:", userId); // ตรวจสอบค่า userId ที่ดึงมา
+
       const response = await fetch('http://10.30.136.56:3001/tasks/get-allTasks', {
         method: 'GET',
         headers: {
@@ -22,8 +27,11 @@ export default function FeedScreen({ route, navigation }) {
 
       const data = await response.json();
       if (response.ok) {
-        // ✅ กรองเฉพาะภารกิจที่ยังไม่สำเร็จ
-        const filteredMissions = data.filter(task => task.status !== 'completed');
+        console.log("Fetched Data:", data); // ตรวจสอบข้อมูลที่ได้รับ
+
+        // ✅ แปลง userId เป็น string ถ้าจำเป็น แล้วกรองเฉพาะภารกิจที่ไม่ใช่ของผู้ใช้
+        const filteredMissions = data.filter(task => task.status !== 'completed' && String(task.userId) !== String(userId));
+        
         setMissions(filteredMissions);
       } else {
         Alert.alert('ข้อผิดพลาด', data.message || 'ไม่สามารถดึงข้อมูลภารกิจได้');
@@ -48,7 +56,10 @@ export default function FeedScreen({ route, navigation }) {
     if (route.params?.completedMissionId) {
       setMissions(prevMissions => prevMissions.filter(mission => mission._id !== route.params.completedMissionId));
     }
-  }, [route.params?.completedMissionId]);
+    if (route.params?.acceptedTask) {
+      setMissions(prevMissions => prevMissions.filter(mission => mission._id !== route.params.acceptedTask._id));
+    }
+  }, [route.params?.completedMissionId, route.params?.acceptedTask]);
 
   const handlePress = (mission) => {
     navigation.navigate('MissionDetailsScreen', { mission });

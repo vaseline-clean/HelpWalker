@@ -7,12 +7,10 @@ import MainTabs from './navigation/MainTabs';
 import SindupScreen from './screens/SindupScreen';
 import MissionDetailsScreen from './screens/MissionDetailsScreen'; // Import หน้ารายละเอียดภารกิจ
 import FeedScreen from './screens/FeedScreen'; // Import FeedScreen
-import ChatScreen from './screens/ChatScreen';
 import ListScreen from './screens/ListScreen';
 import ProfileScreen from './screens/ProfileScreen'; // Ensure this file exists
 import CompletedTasksScreen from './screens/CompletedTasksScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
-
 
 const Stack = createStackNavigator();
 
@@ -67,11 +65,18 @@ export default function App() {
           name="ChatScreen" 
           component={ChatScreen} 
           options={{ title: 'แชท', headerShown: true }}/>
+
         
         <Stack.Screen 
           name="ListScreen" 
           component={ListScreen} 
           options={{ title: 'รายการ', headerShown: true }}/>
+
+        <Stack.Screen
+          name="AcceptTaskScreen"
+          component={AcceptTaskScreen}
+          options={{ title: 'รับภารกิจ', headerShown: true }}
+        />
 
         <Stack.Screen 
           name="CompletedTasksScreen" 

@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 export default function MissionDetailsScreen({ route, navigation }) {
   const { mission } = route.params;
+
+  if (!mission) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>ไม่พบข้อมูลภารกิจ</Text>
+      </View>
+    );
+  }
+
   const { _id: taskId, title: missionTitle, description: missionDetails } = mission;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,26 +50,33 @@ export default function MissionDetailsScreen({ route, navigation }) {
 
   const { creatorName, creatorPhone, address, reward, latitude, longitude } = task;
 
-  console.log("Extracted Coordinates:", latitude, longitude);
+ const handleAcceptMission = async () => {
+  if (task.status !== 'Pending') {
+    Alert.alert('ไม่สามารถรับภารกิจได้', 'ภารกิจนี้ไม่สามารถรับได้ในขณะนี้');
+    return;
+  }
 
-  const handleAcceptMission = async () => {
-    try {
-      // บันทึก taskId ลงใน AsyncStorage
-      await AsyncStorage.setItem('taskId', taskId);
-      console.log('taskId saved:', taskId);
+  try {
+    // บันทึก taskId ลงใน AsyncStorage
+    await AsyncStorage.setItem('taskId', taskId);
+    console.log('taskId saved:', taskId);
 
-      // นำทางไปยังหน้าถัดไปพร้อมกับข้อมูล
-      navigation.navigate('ChatScreen', {
-        taskId // ส่ง taskId ไปด้วย
-      });
-    } catch (error) {
-      console.error('Failed to save taskId:', error);
-    }
-  };
+    // ตรวจสอบว่า taskId ถูกบันทึกไว้ใน AsyncStorage หรือไม่
+    const savedTaskId = await AsyncStorage.getItem('taskId');
+    console.log('Saved taskId:', savedTaskId);
+
+    // ไปที่หน้าจอ AcceptTaskScreen พร้อมส่งข้อมูลภารกิจ
+    navigation.navigate('AcceptTaskScreen', { taskData: task });
+
+    // แสดงการยืนยันภารกิจที่รับแล้ว
+    Alert.alert('สำเร็จ', 'คุณได้รับภารกิจเรียบร้อยแล้ว');
+  } catch (error) {
+    console.error('Failed to save taskId:', error);
+  }
+};
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* รายละเอียดภารกิจ */}
       {missionTitle || missionDetails ? (
         <View style={styles.card}>
           {missionTitle && <Text style={styles.missionTitle}>{missionTitle}</Text>}
@@ -73,7 +89,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* ข้อมูลผู้สร้างภารกิจ */}
       {creatorName || creatorPhone ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>👤 ผู้สร้างภารกิจ</Text>
@@ -82,7 +97,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* ที่อยู่ของผู้สร้างภารกิจ */}
       {address ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>📍 ที่อยู่</Text>
@@ -90,7 +104,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* ของตอบแทน */}
       {reward ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>🎁 ของตอบแทน</Text>
@@ -98,7 +111,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* แผนที่ */}
       {latitude && longitude ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>🗺 ตำแหน่งภารกิจ</Text>
@@ -118,7 +130,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         <Text style={styles.errorText}>❌ ไม่พบตำแหน่งพิกัด</Text>
       )}
 
-      {/* ปุ่มรับภารกิจ */}
       <TouchableOpacity
         style={styles.acceptButton}
         onPress={handleAcceptMission}

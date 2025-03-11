@@ -24,7 +24,6 @@ export default function MainTabs() {
           // } else if (route.name === 'แชท') {
           //   iconName = focused ? 'chatbubble' : 'chatbubble-outline';
           } 
-
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#FF9900',
@@ -36,6 +35,7 @@ export default function MainTabs() {
       <Tab.Screen name="รายการ" component={ListScreen} />
       <Tab.Screen name="โพส" component={PostScreen} />
       {/* <Tab.Screen name="แชท" component={ChatListScreen} /> */}
+
     </Tab.Navigator>
   );
 }
