@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
-
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -35,6 +34,7 @@ export default function ProfileScreen({ navigation }) {
           }
         } else {
           console.warn("No token found in AsyncStorage");
+          navigation.replace('LoginScreen');
         }
       } catch (error) {
         console.error("Error retrieving token:", error);
@@ -57,13 +57,11 @@ export default function ProfileScreen({ navigation }) {
 
     try {
       setLoading(true);
-
       const response = await fetch(`http://10.30.136.56:3001/user/${userId}`, {
-
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Fix template literal
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -89,8 +87,13 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('userToken');
-    navigation.navigate('LoginScreen');
+    try {
+      await AsyncStorage.removeItem('userToken'); // ลบเฉพาะ token
+      navigation.replace('LoginScreen');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถออกจากระบบได้');
+    }
   };
 
   const handleEditProfile = () => {
