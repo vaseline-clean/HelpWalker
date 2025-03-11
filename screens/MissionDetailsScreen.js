@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import MapView, { Marker } from 'react-native-maps';
-import AsyncStorage from '@react-native-async-storage/async-storage';// Import AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 export default function MissionDetailsScreen({ route, navigation }) {
   const { mission } = route.params;
 
-  // Check if mission is undefined
   if (!mission) {
     return (
       <View style={styles.loadingContainer}>
@@ -19,7 +18,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
   const { _id: taskId, title: missionTitle, description: missionDetails } = mission;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [acceptedTasks, setAcceptedTasks] = useState([]); // New state variable
 
   useEffect(() => {
     axios.get(`http://10.30.136.56:3001/tasks/${taskId}`)
@@ -32,8 +30,7 @@ export default function MissionDetailsScreen({ route, navigation }) {
         console.error("Error fetching task:", error);
         setLoading(false);
       });
-
-  }, [taskId, mission.createdBy]);
+  }, [taskId]);
 
   if (loading) {
     return (
@@ -53,30 +50,33 @@ export default function MissionDetailsScreen({ route, navigation }) {
 
   const { creatorName, creatorPhone, address, reward, latitude, longitude } = task;
 
-  console.log("Extracted Coordinates:", latitude, longitude);
+ const handleAcceptMission = async () => {
+  if (task.status !== 'Pending') {
+    Alert.alert('ไม่สามารถรับภารกิจได้', 'ภารกิจนี้ไม่สามารถรับได้ในขณะนี้');
+    return;
+  }
 
-  const handleAcceptMission = async () => {
-    try {
-      // บันทึก taskId ลงใน AsyncStorage
-      await AsyncStorage.setItem('taskId', taskId);
-      console.log('taskId saved:', taskId);
+  try {
+    // บันทึก taskId ลงใน AsyncStorage
+    await AsyncStorage.setItem('taskId', taskId);
+    console.log('taskId saved:', taskId);
 
-      // นำทางไปยังหน้าถัดไปพร้อมกับข้อมูล
-      navigation.navigate('ChatScreen', {
-        chat: {
-          sender: { _id: taskId, name: creatorName, phone: creatorPhone },
-          missionTitle
-        },
-        taskId // ส่ง taskId ไปด้วย
-      });
-    } catch (error) {
-      console.error('Failed to save taskId:', error);
-    }
-  };
+    // ตรวจสอบว่า taskId ถูกบันทึกไว้ใน AsyncStorage หรือไม่
+    const savedTaskId = await AsyncStorage.getItem('taskId');
+    console.log('Saved taskId:', savedTaskId);
+
+    // ไปที่หน้าจอ AcceptTaskScreen พร้อมส่งข้อมูลภารกิจ
+    navigation.navigate('AcceptTaskScreen', { taskData: task });
+
+    // แสดงการยืนยันภารกิจที่รับแล้ว
+    Alert.alert('สำเร็จ', 'คุณได้รับภารกิจเรียบร้อยแล้ว');
+  } catch (error) {
+    console.error('Failed to save taskId:', error);
+  }
+};
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* รายละเอียดภารกิจ */}
       {missionTitle || missionDetails ? (
         <View style={styles.card}>
           {missionTitle && <Text style={styles.missionTitle}>{missionTitle}</Text>}
@@ -89,7 +89,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* ข้อมูลผู้สร้างภารกิจ */}
       {creatorName || creatorPhone ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>👤 ผู้สร้างภารกิจ</Text>
@@ -98,7 +97,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* ที่อยู่ของผู้สร้างภารกิจ */}
       {address ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>📍 ที่อยู่</Text>
@@ -106,7 +104,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* ของตอบแทน */}
       {reward ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>🎁 ของตอบแทน</Text>
@@ -114,7 +111,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* แผนที่ */}
       {latitude && longitude ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>🗺 ตำแหน่งภารกิจ</Text>
@@ -134,61 +130,10 @@ export default function MissionDetailsScreen({ route, navigation }) {
         <Text style={styles.errorText}>❌ ไม่พบตำแหน่งพิกัด</Text>
       )}
 
-      {/* ปุ่มรับภารกิจ */}
       <TouchableOpacity
         style={styles.acceptButton}
-        onPress={async () => {
-          try {
-            // Remove the task from the feed
-            const token = await AsyncStorage.getItem('userToken');
-            const response = await fetch(`http://10.30.136.56:3001/tasks/${taskId}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-              body: JSON.stringify({ status: 'accepted' }),
-            });
-
-            if (!response.ok) {
-              if (response.status === 404) {
-                throw new Error('Task not found. It might have been removed.');
-              }
-              const errorText = await response.text();
-              throw new Error(`Network response was not ok: ${errorText}`);
-            }
-
-            // Refresh accepted tasks
-            const acceptedTasksResponse = await fetch(`http://10.30.136.56:3001/tasks/accepted?createdBy=${task.createdBy}`, {
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-
-            if (!acceptedTasksResponse.ok) {
-              const errorText = await acceptedTasksResponse.text();
-              throw new Error(`Network response was not ok: ${errorText}`);
-            }
-
-            const acceptedTasksText = await acceptedTasksResponse.text();
-            let acceptedTasks;
-            try {
-              acceptedTasks = JSON.parse(acceptedTasksText);
-            } catch (error) {
-              throw new Error('Failed to parse JSON response');
-            }
-
-            await AsyncStorage.setItem('acceptedTasks', JSON.stringify(acceptedTasks));
-
-            // Show success alert
-            Alert.alert('สำเร็จ', 'คุณได้รับภารกิจเรียบร้อยแล้ว');
-            console.log("Task Accepted:", task);
-          } catch (error) {
-            console.error('Error accepting task:', error);
-            Alert.alert('ข้อผิดพลาด', `ไม่สามารถรับภารกิจได้: ${error.message}`);
-          }
-        }}
+        onPress={handleAcceptMission}
+      >
         <Text style={styles.acceptButtonText}>✅ รับภารกิจ</Text>
       </TouchableOpacity>
     </ScrollView>

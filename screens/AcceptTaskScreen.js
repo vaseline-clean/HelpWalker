@@ -4,27 +4,66 @@ import axios from 'axios';
 import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function AcceptTaskScreen({ route, navigation }) {
-  const { taskId } = route.params || {}; // Add a default empty object to handle undefined route.params
-  const [task, setTask] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function AcceptTaskScreen({ navigation }) {
+  const [taskId, setTaskId] = useState(null); // state เพื่อเก็บ taskId
+  const [task, setTask] = useState(null); // state เพื่อเก็บข้อมูลภารกิจ
+  const [loading, setLoading] = useState(true); // state เพื่อจัดการสถานะการโหลด
 
   useEffect(() => {
+    // ดึง taskId จาก AsyncStorage
+    const fetchTaskId = async () => {
+      const storedTaskId = await AsyncStorage.getItem('taskId');
+      if (storedTaskId) {
+        setTaskId(storedTaskId); // ถ้ามี taskId ให้เซ็ตไว้ใน state
+        console.log("taskId saved:", storedTaskId);
+      } else {
+        console.log("taskId is missing");
+      }
+    };
+
+    fetchTaskId();
+  }, []);
+
+  useEffect(() => {
+    // ตรวจสอบว่า taskId มีค่าหรือไม่
     if (!taskId) {
-      setLoading(false);
+      setLoading(false); // ถ้าไม่มี taskId ให้หยุดการโหลด
       return;
     }
-    axios.get(`http://10.30.136.56:3001/tasks/${taskId}`)
-      .then(response => {
+
+    // ดึงข้อมูลภารกิจจาก API
+    const fetchTask = async () => {
+      try {
+        const response = await axios.get(`http://10.30.136.56:3001/tasks/${taskId}`);
         setTask(response.data);
         setLoading(false);
         console.log("Task Data:", response.data);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error("Error fetching task:", error);
         setLoading(false);
-      });
-  }, [taskId]);
+      }
+    };
+
+    fetchTask();
+  }, [taskId]); // ฟังการเปลี่ยนแปลงของ taskId
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
+  }
+
+  if (!task) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>ไม่พบข้อมูลภารกิจ</Text>
+      </View>
+    );
+  }
+
+  const { title, description, creatorName, creatorPhone, address, reward, latitude, longitude } = task;
 
   const handleDelete = async (taskId) => {
     Alert.alert(
@@ -95,24 +134,6 @@ export default function AcceptTaskScreen({ route, navigation }) {
     );
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-      </View>
-    );
-  }
-
-  if (!task) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>ไม่พบข้อมูลภารกิจ</Text>
-      </View>
-    );
-  }
-
-  const { title, description, creatorName, creatorPhone, address, reward, latitude, longitude } = task;
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* รายละเอียดภารกิจ */}
@@ -179,7 +200,7 @@ export default function AcceptTaskScreen({ route, navigation }) {
         onPress={async () => {
           try {
             const token = await AsyncStorage.getItem('userToken');
-            const response = await fetch(`http://10.30.136.56:3001/tasks/${taskId}/accept`, { // Update the URL to include /accept
+            const response = await fetch(`http://10.30.136.56:3001/tasks/${taskId}/accept`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
@@ -244,105 +265,88 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 4,
-    borderLeftWidth: 5,
-    borderLeftColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
   },
   missionTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
     color: '#333',
   },
   missionDetailsTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 10,
-    marginBottom: 5,
     color: '#555',
+    marginTop: 10,
   },
   missionDetails: {
     fontSize: 16,
-    color: '#555',
-    lineHeight: 24,
+    color: '#666',
+    marginTop: 5,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#0078fe',
-    marginBottom: 8,
-  },
-  userName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#555',
+    marginTop: 10,
+  },
+  userName: {
+    fontSize: 16,
     color: '#333',
-    marginBottom: 4,
   },
   userPhone: {
     fontSize: 16,
-    color: '#555',
+    color: '#333',
   },
   address: {
     fontSize: 16,
-    color: '#555',
-    lineHeight: 22,
+    color: '#333',
   },
   reward: {
     fontSize: 16,
-    color: '#d97706',
-    fontWeight: 'bold',
-    lineHeight: 22,
+    color: '#333',
   },
   map: {
-    width: '100%',
-    height: 300,
-    borderRadius: 10,
+    height: 250,
+    borderRadius: 12,
     marginTop: 10,
   },
   acceptButton: {
     backgroundColor: '#4CAF50',
     paddingVertical: 15,
     borderRadius: 10,
+    marginTop: 20,
     alignItems: 'center',
-    marginTop: 'auto',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3,
   },
   acceptButtonText: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
   },
   buttonContainer: {
-    flexDirection: 'row', // ปุ่มอยู่ข้างกัน
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 30,
   },
   redoButton: {
-    flex: 1,
-    backgroundColor: '#4CAF50',
-    paddingVertical: 8,
-    marginRight: 5,
-    borderRadius: 5,
+    backgroundColor: '#FF9800',
+    paddingVertical: 15,
+    borderRadius: 10,
+    flex: 0.48,
     alignItems: 'center',
   },
   deleteButton: {
-    flex: 1,
     backgroundColor: '#F44336',
-    paddingVertical: 8,
-    marginLeft: 5,
-    borderRadius: 5,
+    paddingVertical: 15,
+    borderRadius: 10,
+    flex: 0.48,
     alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
