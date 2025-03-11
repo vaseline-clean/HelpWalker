@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import MapView, { Marker } from 'react-native-maps';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';// Import AsyncStorage
 
 export default function MissionDetailsScreen({ route, navigation }) {
   const { mission } = route.params;
@@ -54,6 +54,25 @@ export default function MissionDetailsScreen({ route, navigation }) {
   const { creatorName, creatorPhone, address, reward, latitude, longitude } = task;
 
   console.log("Extracted Coordinates:", latitude, longitude);
+
+  const handleAcceptMission = async () => {
+    try {
+      // บันทึก taskId ลงใน AsyncStorage
+      await AsyncStorage.setItem('taskId', taskId);
+      console.log('taskId saved:', taskId);
+
+      // นำทางไปยังหน้าถัดไปพร้อมกับข้อมูล
+      navigation.navigate('ChatScreen', {
+        chat: {
+          sender: { _id: taskId, name: creatorName, phone: creatorPhone },
+          missionTitle
+        },
+        taskId // ส่ง taskId ไปด้วย
+      });
+    } catch (error) {
+      console.error('Failed to save taskId:', error);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -170,7 +189,6 @@ export default function MissionDetailsScreen({ route, navigation }) {
             Alert.alert('ข้อผิดพลาด', `ไม่สามารถรับภารกิจได้: ${error.message}`);
           }
         }}
-      >
         <Text style={styles.acceptButtonText}>✅ รับภารกิจ</Text>
       </TouchableOpacity>
     </ScrollView>
