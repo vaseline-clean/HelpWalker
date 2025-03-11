@@ -56,6 +56,7 @@ export default function ChatScreen({ route }) {
     <View style={styles.container}>
       {error && <Text style={styles.errorText}>{error}</Text>}
 
+
       {userInfo ? (
         <View style={styles.userInfoContainer}>
           <Text style={styles.userName}>Name: {userInfo.name}</Text>
