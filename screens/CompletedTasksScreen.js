@@ -88,43 +88,59 @@ export default function CompletedTasksScreen({ navigation }) {
     );
   };
 
-  const handleRedo = async (taskId) => {
-    Alert.alert(
-      "ยืนยันการทำใหม่?",
-      "คุณต้องการย้ายภารกิจนี้กลับไปที่รายการรอดำเนินการหรือไม่?",
-      [
-        { text: "ยกเลิก", style: "cancel" },
-        {
-          text: "ยืนยัน",
-          onPress: async () => {
-            try {
-              const storedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
-              const taskToRedo = storedTasks.find(task => task._id === taskId);
-              
-              if (!taskToRedo) return;
+ const handleRedo = async (taskId) => {
+  Alert.alert(
+    "ยืนยันการทำใหม่?",
+    "คุณต้องการย้ายภารกิจนี้กลับไปที่รายการรอดำเนินการหรือไม่?",
+    [
+      { text: "ยกเลิก", style: "cancel" },
+      {
+        text: "ยืนยัน",
+        onPress: async () => {
+          try {
+            const storedToken = await AsyncStorage.getItem('userToken');
+            if (!storedToken) throw new Error("Token not found");
 
-              // อัปเดตสถานะเป็น 'pending'
-              taskToRedo.status = 'pending';
+            // **📡 อัปเดตสถานะในเซิร์ฟเวอร์**
+            const response = await fetch(`http://10.30.136.56:3001/tasks/${taskId}/redo`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${storedToken}`,
+              },
+              body: JSON.stringify({ status: 'pending' }), // 🔄 เปลี่ยนสถานะเป็น "pending"
+            });
 
-              // ลบออกจาก completedTasks และเพิ่มกลับไปยัง pendingTasks
-              const updatedCompletedTasks = storedTasks.filter(task => task._id !== taskId);
-              await AsyncStorage.setItem('completedTasks', JSON.stringify(updatedCompletedTasks));
+            if (!response.ok) throw new Error("Failed to update task status");
 
-              const pendingTasks = JSON.parse(await AsyncStorage.getItem('pendingTasks')) || [];
-              pendingTasks.push(taskToRedo);
-              await AsyncStorage.setItem('pendingTasks', JSON.stringify(pendingTasks));
+            // **🔄 อัปเดตใน AsyncStorage**
+            const storedTasks = JSON.parse(await AsyncStorage.getItem('completedTasks')) || [];
+            const taskToRedo = storedTasks.find(task => task._id === taskId);
+            
+            if (!taskToRedo) return;
 
-              setCompletedTasks(updatedCompletedTasks);
-              Alert.alert('สำเร็จ', 'ภารกิจถูกย้ายกลับไปยังรายการที่รอดำเนินการ');
-            } catch (error) {
-              console.error('Error updating task status:', error);
-              Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัปเดตสถานะภารกิจได้');
-            }
-          },
+            taskToRedo.status = 'pending';
+
+            // ลบออกจาก completedTasks และเพิ่มกลับไปยัง pendingTasks
+            const updatedCompletedTasks = storedTasks.filter(task => task._id !== taskId);
+            await AsyncStorage.setItem('completedTasks', JSON.stringify(updatedCompletedTasks));
+
+            const pendingTasks = JSON.parse(await AsyncStorage.getItem('pendingTasks')) || [];
+            pendingTasks.push(taskToRedo);
+            await AsyncStorage.setItem('pendingTasks', JSON.stringify(pendingTasks));
+
+            setCompletedTasks(updatedCompletedTasks);
+            Alert.alert('สำเร็จ', 'ภารกิจถูกย้ายกลับไปยังรายการที่รอดำเนินการ');
+          } catch (error) {
+            console.error('Error updating task status:', error);
+            Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัปเดตสถานะภารกิจได้');
+          }
         },
-      ]
-    );
-  };
+      },
+    ]
+  );
+};
+
 
   return (
     <View style={styles.container}>
