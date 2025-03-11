@@ -60,12 +60,6 @@ export default function App() {
           name="MissionDetailsScreen" 
           component={MissionDetailsScreen} 
           options={{ title: 'รายละเอียดภารกิจ', headerShown: true }}/>
-
-        <Stack.Screen 
-          name="ChatScreen" 
-          component={ChatScreen} 
-          options={{ title: 'แชท', headerShown: true }}/>
-
         
         <Stack.Screen 
           name="ListScreen" 
