@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert, Button, TextInput } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomHeader from '../components/CustomHeader';
 import ChatScreen from './ChatScreen';
 
@@ -10,6 +11,7 @@ export default function ChatListScreen({ navigation, route }) {
   const [filteredChats, setFilteredChats] = useState([]);
   const [noChats, setNoChats] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [userToken, setUserToken] = useState(null); // State for user token
 
   const createNewChat = () => {
     const newChat = {
@@ -27,8 +29,25 @@ export default function ChatListScreen({ navigation, route }) {
   };
 
   useEffect(() => {
-    if (user && user.id) {
-      axios.get(`http://10.30.136.56:3001/chat/messages/${user.id}`)
+    const fetchUserToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (token) {
+          setUserToken(token);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user token:', error);
+      }
+    };
+
+    fetchUserToken();
+  }, []);
+
+  useEffect(() => {
+    if (user && user.id && userToken) {
+      axios.get(`http://10.30.136.56:3001/chat/messages/${user.id}`, {
+        headers: { Authorization: `Bearer ${userToken}` }
+      })
         .then(response => {
           if (response.data.length === 0) {
             setNoChats(true);
@@ -50,7 +69,7 @@ export default function ChatListScreen({ navigation, route }) {
           }
         });
     }
-  }, [user]);
+  }, [user, userToken]);
 
   const handleSearch = (text) => {
     setSearchText(text);
