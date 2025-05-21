@@ -31,7 +31,7 @@ export default function SignupScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch('http://10.30.136.56:3000/auth/register', {
+      const response = await fetch('http://192.168.38.222:3000/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

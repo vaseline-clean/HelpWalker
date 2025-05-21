@@ -12,7 +12,7 @@ export default function FeedScreen({ route, navigation }) {
   const fetchAllTasks = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await fetch('http://10.30.136.56:3001/tasks/get-allTasks', {
+      const response = await fetch('http://192.168.38.222:3000/tasks/get-allTasks', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

@@ -65,7 +65,7 @@ export default function PostScreen({ navigation }) {
         return;
       }
 
-      const response = await fetch('http://10.30.136.56:3001/tasks/add-tasks', {
+      const response = await fetch('http://192.168.38.222:3000/tasks/add-tasks', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

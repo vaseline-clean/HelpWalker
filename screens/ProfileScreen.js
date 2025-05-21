@@ -48,7 +48,7 @@ export default function ProfileScreen({ navigation }) {
     try {
       if (!token || !userId) return;
 
-      const response = await fetch(`http://10.30.136.56:3001/users/${userId}`, {
+      const response = await fetch(`http://192.168.38.222:3000/users/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

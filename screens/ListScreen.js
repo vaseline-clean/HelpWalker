@@ -44,7 +44,7 @@ export default function ListScreen({ navigation }) {
     try {
       if (!token || !userId) return;
 
-      const response = await fetch(`http://10.30.136.56:3001/tasks/user-tasks/${userId}`, {
+      const response = await fetch(`http://192.168.38.222:3000/tasks/user-tasks/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

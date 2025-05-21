@@ -56,7 +56,7 @@ export default function CompletedTasksScreen({ navigation }) {
             try {
               // ลบข้อมูลจากฐานข้อมูล
               const storedToken = await AsyncStorage.getItem('userToken');
-              await fetch(`http://10.30.136.56:3001/tasks/${taskId}`, {
+              await fetch(`http://192.168.38.222:3000/tasks/${taskId}`, {
                 method: 'DELETE',
                 headers: {
                   'Content-Type': 'application/json',
